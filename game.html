@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Madencilik Oyunu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+    }
+    #status {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Madencilik Oyunu</h1>
+  <p>Enerji: <span id="energy">5</span></p>
+  <button onclick="mine()">Madencilik Yap</button>
+  <button onclick="refillEnergy()">Enerji Yenile</button>
+  <div id="status">Kaynaklarınızı toplamak için madencilik yapın!</div>
+
+  <script>
+    let energy = 5;
+    const resources = { kömür: 0, altın: 0, elmas: 0 };
+
+    function mine() {
+      if (energy > 0) {
+        const outcomes = ["kömür", "altın", "elmas"];
+        const weights = [70, 25, 5];
+        const random = Math.random() * 100;
+        let cumulative = 0;
+        let found;
+
+        for (let i = 0; i < outcomes.length; i++) {
+          cumulative += weights[i];
+          if (random < cumulative) {
+            found = outcomes[i];
+            break;
+          }
+        }
+
+        resources[found]++;
+        energy--;
+        document.getElementById("energy").innerText = energy;
+        document.getElementById("status").innerText = `${found.toUpperCase()} buldunuz!`;
+      } else {
+        document.getElementById("status").innerText = "Enerjiniz yok! Yenileyin.";
+      }
+    }
+
+    function refillEnergy() {
+      energy = 5;
+      document.getElementById("energy").innerText = energy;
+      document.getElementById("status").innerText = "Enerjiniz yenilendi!";
+    }
+  </script>
+</body>
+</html>
