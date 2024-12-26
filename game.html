@@ -3,157 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Görselleştirilmiş Çiftlik Oyunu</title>
+  <title>Balıkçı Oyunu</title>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
-      background-color: #87ceeb;
       margin: 0;
       padding: 0;
-      text-align: center;
-    }
-    h1 {
-      margin: 20px 0;
-      color: #4CAF50;
-    }
-    .farm-container {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
-      margin: 20px auto;
-      gap: 20px;
-      max-width: 800px;
+      align-items: center;
+      height: 100vh;
+      background: #87CEEB;
+      font-family: Arial, sans-serif;
     }
-    .farm-item {
-      position: relative;
-      width: 150px;
-      height: 150px;
-      background-color: #f3f3f3;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.3s ease;
-      overflow: hidden;
+
+    canvas {
+      border: 2px solid #000;
+      background: linear-gradient(to top, #1E90FF, #87CEEB);
     }
-    .farm-item:hover {
-      transform: scale(1.05);
-    }
-    .farm-item img {
-      max-width: 100%;
-      max-height: 100%;
-    }
-    .farm-item p {
-      margin: 5px 0 0 0;
-      background: rgba(0, 0, 0, 0.5);
-      color: white;
-      font-size: 14px;
+
+    #scoreboard {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      padding: 5px;
-    }
-    .stats {
-      margin-top: 30px;
+      top: 10px;
+      left: 10px;
       font-size: 20px;
-      color: #fff;
-    }
-    .message {
-      margin-top: 20px;
       font-weight: bold;
-      color: #ffeb3b;
-      font-size: 18px;
-    }
-    footer {
-      margin-top: 40px;
-      font-size: 14px;
-      color: #fff;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>Çiftlik Yönetimi Oyunu</h1>
-
-  <div class="farm-container">
-    <div class="farm-item" id="plantItem">
-      <img src="https://www.pngkey.com/png/full/869-8696433_plant-plant-clipart-transparent-background.png" alt="Plant">
-      <p>Ekin Ekle</p>
-    </div>
-    <div class="farm-item" id="harvestItem">
-      <img src="https://www.pngkey.com/png/full/944-9446068_farming-crops-harvest-png.png" alt="Harvest">
-      <p>Hasat Yap</p>
-    </div>
-    <div class="farm-item" id="feedItem">
-      <img src="https://www.pngkey.com/png/full/268-2686793_animal-png-farm-animals-png.png" alt="Feed">
-      <p>Hayvanları Besle</p>
-    </div>
-  </div>
-
-  <div class="stats">
-    <p>Para: <span id="money">0</span> TL</p>
-    <p>Çiftlik Durumu: <span id="farmStatus">Boş</span></p>
-  </div>
-
-  <div class="message" id="message"></div>
-
-  <footer>© 2024 Çiftlik Oyunu</footer>
-
+  <div id="scoreboard">Puan: 0</div>
+  <canvas id="gameCanvas" width="800" height="600"></canvas>
   <script>
-    let money = 0;
-    let farmStatus = "Boş"; // Çiftlik başlangıç durumu
-    const moneyElement = document.getElementById("money");
-    const farmStatusElement = document.getElementById("farmStatus");
-    const messageElement = document.getElementById("message");
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreboard = document.getElementById("scoreboard");
 
-    // Ekin ekleme
-    document.getElementById("plantItem").addEventListener("click", function() {
-      if (farmStatus === "Boş") {
-        farmStatus = "Ekildi";
-        farmStatusElement.innerText = farmStatus;
-        messageElement.innerText = "Ekinler ekildi! Bir süre sonra hasat edebilirsiniz.";
-        setTimeout(harvestReady, 5000); // 5 saniye sonra hasat edilebilir hale gelir
-      } else {
-        messageElement.innerText = "Çiftlik zaten ekili.";
+    let score = 0;
+    let fishes = [];
+    const hook = { x: canvas.width / 2, y: 0, width: 10, height: 10, speed: 5 };
+
+    // Balık sınıfı
+    class Fish {
+      constructor(x, y, speed, color, points) {
+        this.x = x;
+        this.y = y;
+        this.speed = speed;
+        this.color = color;
+        this.points = points;
+        this.width = 40;
+        this.height = 20;
       }
-    });
 
-    // Hasat yapma
-    document.getElementById("harvestItem").addEventListener("click", function() {
-      if (farmStatus === "Ekildi") {
-        farmStatus = "Hasat Edildi";
-        farmStatusElement.innerText = farmStatus;
-        money += 10; // Hasat sonrası 10 TL kazanır
-        moneyElement.innerText = money;
-        messageElement.innerText = "Ekinler hasat edildi! Para kazandınız.";
-        setTimeout(resetFarm, 3000); // 3 saniye sonra çiftlik sıfırlanır
-      } else {
-        messageElement.innerText = "Hasat için önce ekim yapmalısınız.";
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y, this.width, this.height);
       }
-    });
 
-    // Hayvanları besleme
-    document.getElementById("feedItem").addEventListener("click", function() {
-      if (farmStatus === "Hasat Edildi") {
-        money += 5; // Hayvanları beslerken 5 TL kazanılır
-        moneyElement.innerText = money;
-        messageElement.innerText = "Hayvanlar beslendi! Para kazandınız.";
-        setTimeout(resetFarm, 3000); // 3 saniye sonra çiftlik sıfırlanır
-      } else {
-        messageElement.innerText = "Hasat yapmadan hayvanları besleyemezsiniz.";
+      update() {
+        this.x += this.speed;
+        if (this.x > canvas.width || this.x < -this.width) {
+          this.speed *= -1;
+        }
       }
-    });
-
-    // Hasat sonrası çiftliği sıfırlama
-    function resetFarm() {
-      farmStatus = "Boş";
-      farmStatusElement.innerText = farmStatus;
-      messageElement.innerText = "Çiftlik sıfırlandı. Yeni ekimler için hazır.";
     }
 
-    // Hasat için ekinlerin hazır olması
-    function harvestReady() {
-      messageElement.innerText = "Ekinler hasat için hazır!";
+    function createFish() {
+      const x = Math.random() > 0.5 ? -40 : canvas.width;
+      const y = Math.random() * (canvas.height - 100) + 50;
+      const speed = Math.random() * 2 + 1 * (x === -40 ? 1 : -1);
+      const colors = ["#FF4500", "#FFD700", "#00FA9A"];
+      const points = Math.floor(Math.random() * 10) + 1;
+
+      fishes.push(new Fish(x, y, speed, colors[Math.floor(Math.random() * colors.length)], points));
     }
+
+    function drawHook() {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(hook.x, hook.y, hook.width, hook.height);
+    }
+
+    function updateHook() {
+      if (keys.ArrowLeft && hook.x > 0) hook.x -= hook.speed;
+      if (keys.ArrowRight && hook.x < canvas.width - hook.width) hook.x += hook.speed;
+      if (keys.ArrowDown && hook.y < canvas.height - hook.height) hook.y += hook.speed;
+      if (keys.ArrowUp && hook.y > 0) hook.y -= hook.speed;
+    }
+
+    function detectCollision() {
+      fishes.forEach((fish, index) => {
+        if (
+          hook.x < fish.x + fish.width &&
+          hook.x + hook.width > fish.x &&
+          hook.y < fish.y + fish.height &&
+          hook.y + hook.height > fish.y
+        ) {
+          score += fish.points;
+          scoreboard.textContent = `Puan: ${score}`;
+          fishes.splice(index, 1);
+        }
+      });
+    }
+
+    let keys = {};
+    window.addEventListener("keydown", (e) => {
+      keys[e.key] = true;
+    });
+    window.addEventListener("keyup", (e) => {
+      keys[e.key] = false;
+    });
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      drawHook();
+      updateHook();
+
+      fishes.forEach((fish) => {
+        fish.draw();
+        fish.update();
+      });
+
+      detectCollision();
+
+      if (Math.random() < 0.02) {
+        createFish();
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
   </script>
 </body>
 </html>
