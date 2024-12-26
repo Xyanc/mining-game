@@ -3,78 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Online Oyun: Taş-Kağıt-Makas</title>
+  <title>Çiftlik Yönetimi Oyunu</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin: 0;
+      background-color: #f7f7f7;
+      text-align: center;
       padding: 20px;
     }
-    .game-container, .chat-container {
-      width: 100%;
-      max-width: 500px;
-      margin: 10px 0;
-      padding: 15px;
-      border: 1px solid #ccc;
+    .game-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .farm-item {
+      width: 150px;
+      height: 150px;
+      background-color: #9ae3d1;
       border-radius: 10px;
-    }
-    .choices {
       display: flex;
-      justify-content: space-around;
-      margin-top: 10px;
-    }
-    .choices button {
-      padding: 10px 20px;
-      font-size: 16px;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-    .chat-box {
-      height: 200px;
-      overflow-y: auto;
-      border: 1px solid #ddd;
-      padding: 10px;
-      margin-bottom: 10px;
+    .farm-item:hover {
+      background-color: #7fbd9a;
     }
-    .chat-input {
-      display: flex;
-      gap: 10px;
+    .farm-item p {
+      margin: 10px 0 0 0;
     }
-    .chat-input input {
-      flex: 1;
-      padding: 8px;
+    .stats {
+      margin-top: 30px;
+      font-size: 18px;
     }
-    .chat-input button {
-      padding: 8px 15px;
+    .message {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #4caf50;
     }
   </style>
 </head>
 <body>
-  <h1>Taş-Kağıt-Makas Oyunu</h1>
 
-  <!-- Oyun Bölümü -->
+  <h1>Çiftlik Yönetimi Oyunu</h1>
   <div class="game-container">
-    <h2>Oyun</h2>
-    <p id="game-status">Bir seçim yapın: Taş, Kağıt, Makas</p>
-    <div class="choices">
-      <button onclick="playGame('Taş')">Taş</button>
-      <button onclick="playGame('Kağıt')">Kağıt</button>
-      <button onclick="playGame('Makas')">Makas</button>
+    <div class="farm-item" id="plantItem">
+      <img src="https://www.pngkey.com/png/detail/869-8696433_plant-plant-clipart-transparent-background.png" width="60" alt="Plant">
+      <p>Ekin Ekle</p>
+    </div>
+    <div class="farm-item" id="harvestItem">
+      <img src="https://www.pngkey.com/png/detail/944-9446068_farming-crops-harvest-png.png" width="60" alt="Harvest">
+      <p>Hasat Yap</p>
+    </div>
+    <div class="farm-item" id="feedItem">
+      <img src="https://www.pngkey.com/png/detail/268-2686793_animal-png-farm-animals-png.png" width="60" alt="Feed">
+      <p>Hayvanları Besle</p>
     </div>
   </div>
 
-  <!-- Sohbet Bölümü -->
-  <div class="chat-container">
-    <h2>Sohbet</h2>
-    <div class="chat-box" id="chat-box"></div>
-    <div class="chat-input">
-      <input type="text" id="chat-message" placeholder="Mesaj yaz...">
-      <button onclick="sendMessage()">Gönder</button>
-    </div>
+  <div class="stats">
+    <p>Para: <span id="money">0</span> TL</p>
+    <p>Çiftlik Durumu: <span id="farmStatus">Boş</span></p>
   </div>
 
-  <script src="app.js"></script>
+  <div class="message" id="message"></div>
+
+  <script>
+    let money = 0;
+    let farmStatus = "Boş"; // Çiftlik başlangıç durumu
+    const moneyElement = document.getElementById("money");
+    const farmStatusElement = document.getElementById("farmStatus");
+    const messageElement = document.getElementById("message");
+
+    // Ekin ekleme
+    document.getElementById("plantItem").addEventListener("click", function() {
+      if (farmStatus === "Boş") {
+        farmStatus = "Ekildi";
+        farmStatusElement.innerText = farmStatus;
+        messageElement.innerText = "Ekinler ekildi! Bir süre sonra hasat edebilirsiniz.";
+        setTimeout(harvestReady, 5000); // 5 saniye sonra hasat edilebilir hale gelir
+      } else {
+        messageElement.innerText = "Çiftlik zaten ekili.";
+      }
+    });
+
+    // Hasat yapma
+    document.getElementById("harvestItem").addEventListener("click", function() {
+      if (farmStatus === "Ekildi") {
+        farmStatus = "Hasat Edildi";
+        farmStatusElement.innerText = farmStatus;
+        money += 10; // Hasat sonrası 10 TL kazanır
+        moneyElement.innerText = money;
+        messageElement.innerText = "Ekinler hasat edildi! Para kazandınız.";
+        setTimeout(resetFarm, 3000); // 3 saniye sonra çiftlik sıfırlanır
+      } else {
+        messageElement.innerText = "Hasat için önce ekim yapmalısınız.";
+      }
+    });
+
+    // Hayvanları besleme
+    document.getElementById("feedItem").addEventListener("click", function() {
+      if (farmStatus === "Hasat Edildi") {
+        money += 5; // Hayvanları beslerken 5 TL kazanılır
+        moneyElement.innerText = money;
+        messageElement.innerText = "Hayvanlar beslendi! Para kazandınız.";
+        setTimeout(resetFarm, 3000); // 3 saniye sonra çiftlik sıfırlanır
+      } else {
+        messageElement.innerText = "Hasat yapmadan hayvanları besleyemezsiniz.";
+      }
+    });
+
+    // Hasat sonrası çiftliği sıfırlama
+    function resetFarm() {
+      farmStatus = "Boş";
+      farmStatusElement.innerText = farmStatus;
+      messageElement.innerText = "Çiftlik sıfırlandı. Yeni ekimler için hazır.";
+    }
+
+    // Hasat için ekinlerin hazır olması
+    function harvestReady() {
+      messageElement.innerText = "Ekinler hasat için hazır!";
+    }
+  </script>
+
 </body>
 </html>
