@@ -14,11 +14,13 @@
       height: 100vh;
       background: #87CEEB;
       font-family: Arial, sans-serif;
+      overflow: hidden;
     }
 
     canvas {
       border: 2px solid #000;
       background: linear-gradient(to top, #1E90FF, #87CEEB);
+      touch-action: none; /* Mobil uyum için dokunma engelleme */
     }
 
     #scoreboard {
@@ -43,23 +45,31 @@
 
     let score = 0;
     let fishes = [];
-    const hook = { x: canvas.width / 2, y: 0, width: 10, height: 10, speed: 5 };
+    let hook = { x: canvas.width / 2, y: 50, targetY: 50, speed: 5, isReturning: false };
+    const fisherman = { x: canvas.width / 2 - 30, y: 10, width: 60, height: 40 };
+
+    // Balık görselleri
+    const fishImages = ["https://via.placeholder.com/40x20/FF4500", "https://via.placeholder.com/40x20/FFD700", "https://via.placeholder.com/40x20/00FA9A"];
+    const fishSprites = fishImages.map((src) => {
+      const img = new Image();
+      img.src = src;
+      return img;
+    });
 
     // Balık sınıfı
     class Fish {
-      constructor(x, y, speed, color, points) {
+      constructor(x, y, speed, image, points) {
         this.x = x;
         this.y = y;
         this.speed = speed;
-        this.color = color;
+        this.image = image;
         this.points = points;
         this.width = 40;
         this.height = 20;
       }
 
       draw() {
-        ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
       }
 
       update() {
@@ -72,52 +82,80 @@
 
     function createFish() {
       const x = Math.random() > 0.5 ? -40 : canvas.width;
-      const y = Math.random() * (canvas.height - 100) + 50;
+      const y = Math.random() * (canvas.height - 200) + 100;
       const speed = Math.random() * 2 + 1 * (x === -40 ? 1 : -1);
-      const colors = ["#FF4500", "#FFD700", "#00FA9A"];
-      const points = Math.floor(Math.random() * 10) + 1;
+      const randomFish = Math.floor(Math.random() * fishSprites.length);
+      const points = (randomFish + 1) * 10;
 
-      fishes.push(new Fish(x, y, speed, colors[Math.floor(Math.random() * colors.length)], points));
+      fishes.push(new Fish(x, y, speed, fishSprites[randomFish], points));
+    }
+
+    function drawFisherman() {
+      ctx.fillStyle = "#8B4513";
+      ctx.fillRect(fisherman.x, fisherman.y, fisherman.width, fisherman.height);
+      ctx.fillStyle = "#FFD700";
+      ctx.fillRect(fisherman.x + 15, fisherman.y - 10, 30, 10); // Şapka
     }
 
     function drawHook() {
-      ctx.fillStyle = "#000";
-      ctx.fillRect(hook.x, hook.y, hook.width, hook.height);
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, fisherman.y + fisherman.height);
+      ctx.lineTo(hook.x, hook.y);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.fillStyle = "#FF0000";
+      ctx.beginPath();
+      ctx.arc(hook.x, hook.y, 5, 0, Math.PI * 2);
+      ctx.fill();
     }
 
     function updateHook() {
-      if (keys.ArrowLeft && hook.x > 0) hook.x -= hook.speed;
-      if (keys.ArrowRight && hook.x < canvas.width - hook.width) hook.x += hook.speed;
-      if (keys.ArrowDown && hook.y < canvas.height - hook.height) hook.y += hook.speed;
-      if (keys.ArrowUp && hook.y > 0) hook.y -= hook.speed;
+      if (!hook.isReturning) {
+        hook.y += hook.speed;
+        if (hook.y >= hook.targetY) {
+          hook.isReturning = true;
+        }
+      } else {
+        hook.y -= hook.speed;
+        if (hook.y <= 50) {
+          hook.isReturning = false;
+          hook.targetY = 50;
+        }
+      }
     }
 
     function detectCollision() {
       fishes.forEach((fish, index) => {
         if (
+          hook.x > fish.x &&
           hook.x < fish.x + fish.width &&
-          hook.x + hook.width > fish.x &&
-          hook.y < fish.y + fish.height &&
-          hook.y + hook.height > fish.y
+          hook.y > fish.y &&
+          hook.y < fish.y + fish.height
         ) {
           score += fish.points;
           scoreboard.textContent = `Puan: ${score}`;
           fishes.splice(index, 1);
+          hook.isReturning = true;
         }
       });
     }
 
-    let keys = {};
-    window.addEventListener("keydown", (e) => {
-      keys[e.key] = true;
-    });
-    window.addEventListener("keyup", (e) => {
-      keys[e.key] = false;
+    canvas.addEventListener("touchstart", (e) => {
+      if (hook.y === 50) {
+        const rect = canvas.getBoundingClientRect();
+        const touchX = e.touches[0].clientX - rect.left;
+        const touchY = e.touches[0].clientY - rect.top;
+        hook.x = touchX;
+        hook.targetY = touchY;
+      }
     });
 
     function gameLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      drawFisherman();
       drawHook();
       updateHook();
 
