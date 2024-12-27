@@ -24,7 +24,7 @@
         }
 
         .info {
-            display: flex;
+            display: none;
             justify-content: space-between;
             width: 90%;
             max-width: 400px;
@@ -32,12 +32,8 @@
             font-size: 18px;
         }
 
-        .controls, #startGame {
-            margin: 20px 0;
-        }
-
         .controls {
-            display: grid;
+            display: none;
             grid-template-areas:
                 ". up ."
                 "left . right"
@@ -99,6 +95,8 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startButton = document.getElementById('startGame');
+        const info = document.querySelector('.info');
+        const controls = document.querySelector('.controls');
         const boxSize = 20;
         const canvasSize = Math.min(window.innerWidth, window.innerHeight) - 100;
         canvas.width = Math.floor(canvasSize / boxSize) * boxSize;
@@ -126,6 +124,8 @@
         function startGame() {
             startButton.style.display = 'none';
             canvas.style.display = 'block';
+            info.style.display = 'flex';
+            controls.style.display = 'grid';
             resetGame();
             gameInterval = setInterval(gameLoop, 200);
         }
@@ -178,55 +178,6 @@
             }
         }
 
-        function updateBot(bot) {
-            const head = { ...bot.body[0] };
-
-            const botDirection = getBotDirection(bot.body[0], food);
-            if (botDirection === 'UP') head.y -= boxSize;
-            if (botDirection === 'DOWN') head.y += boxSize;
-            if (botDirection === 'LEFT') head.x -= boxSize;
-            if (botDirection === 'RIGHT') head.x += boxSize;
-
-            if (head.x === food.x && head.y === food.y) {
-                bot.body.unshift(head);
-                food = spawnFood();
-            } else {
-                bot.body.pop();
-                bot.body.unshift(head);
-            }
-        }
-
-        function getBotDirection(botHead, target) {
-            if (Math.abs(botHead.x - target.x) > Math.abs(botHead.y - target.y)) {
-                return botHead.x < target.x ? 'RIGHT' : 'LEFT';
-            } else {
-                return botHead.y < target.y ? 'DOWN' : 'UP';
-            }
-        }
-
-        function isGameOver(snakeBody, isPlayer) {
-            const head = snakeBody[0];
-
-            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
-                return true;
-            }
-
-            for (let i = 1; i < snakeBody.length; i++) {
-                if (head.x === snakeBody[i].x && head.y === snakeBody[i].y) {
-                    return true;
-                }
-            }
-
-            const allBodies = isPlayer ? bots.flatMap(bot => bot.body) : snake;
-            for (let segment of allBodies) {
-                if (head.x === segment.x && head.y === segment.y) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         function spawnFood() {
             const x = Math.floor(Math.random() * (canvas.width / boxSize)) * boxSize;
             const y = Math.floor(Math.random() * (canvas.height / boxSize)) * boxSize;
@@ -255,6 +206,16 @@
 
             ctx.fillStyle = 'red';
             ctx.fillRect(food.x, food.y, boxSize, boxSize);
+        }
+
+        function isGameOver(snakeBody, isPlayer) {
+            const head = snakeBody[0];
+
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                return true;
+            }
+
+            return false;
         }
     </script>
 </body>
