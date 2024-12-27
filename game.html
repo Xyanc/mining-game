@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akıllı Botlarla Gelişmiş Yılan Oyunu</title>
+    <title>Akıllı Botlarla Yılan Oyunu</title>
     <style>
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            margin: 0;
             background-color: #282c34;
             color: white;
-            margin: 0;
-            height: 100vh;
             font-family: Arial, sans-serif;
+            height: 100vh;
         }
 
         canvas {
-            background: black;
+            background-color: black;
             border: 2px solid #4CAF50;
         }
 
@@ -58,7 +58,7 @@
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <canvas id="gameCanvas"></canvas>
     <div class="score">Skor: <span id="score">0</span></div>
     <div class="controls">
         <button class="control-btn" id="up" style="grid-area: up;">↑</button>
@@ -71,14 +71,16 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const boxSize = 20;
-        const canvasSize = 400;
+        const canvasSize = Math.min(window.innerWidth, window.innerHeight) - 100;
+        canvas.width = Math.floor(canvasSize / boxSize) * boxSize;
+        canvas.height = Math.floor(canvasSize / boxSize) * boxSize;
 
         let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
-        let bot1 = [{ x: 3 * boxSize, y: 3 * boxSize }];
-        let bot2 = [{ x: 7 * boxSize, y: 7 * boxSize }];
+        let bots = [
+            { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN' },
+            { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP' }
+        ];
         let direction = 'RIGHT';
-        let bot1Direction = 'RIGHT';
-        let bot2Direction = 'LEFT';
         let food = spawnFood();
         let score = 0;
 
@@ -96,10 +98,7 @@
             }
 
             updateSnake();
-            bot1Direction = getBotDirection(bot1, food);
-            bot2Direction = getBotDirection(bot2, food);
-            updateBot(bot1, bot1Direction);
-            updateBot(bot2, bot2Direction);
+            bots.forEach(bot => updateBot(bot));
             draw();
         }
 
@@ -130,30 +129,36 @@
             }
         }
 
-        function updateBot(bot, botDirection) {
-            const head = { ...bot[0] };
+        function updateBot(bot) {
+            const head = { ...bot.body[0] };
 
+            const botDirection = getBotDirection(bot.body[0], food);
             if (botDirection === 'UP') head.y -= boxSize;
             if (botDirection === 'DOWN') head.y += boxSize;
             if (botDirection === 'LEFT') head.x -= boxSize;
             if (botDirection === 'RIGHT') head.x += boxSize;
 
-            bot.pop();
-            bot.unshift(head);
+            if (head.x === food.x && head.y === food.y) {
+                bot.body.unshift(head);
+                food = spawnFood();
+            } else {
+                bot.body.pop();
+                bot.body.unshift(head);
+            }
         }
 
-        function getBotDirection(bot, target) {
-            const head = bot[0];
-            if (head.x < target.x) return 'RIGHT';
-            if (head.x > target.x) return 'LEFT';
-            if (head.y < target.y) return 'DOWN';
-            if (head.y > target.y) return 'UP';
+        function getBotDirection(botHead, target) {
+            if (Math.abs(botHead.x - target.x) > Math.abs(botHead.y - target.y)) {
+                return botHead.x < target.x ? 'RIGHT' : 'LEFT';
+            } else {
+                return botHead.y < target.y ? 'DOWN' : 'UP';
+            }
         }
 
         function isGameOver(snake) {
             const head = snake[0];
 
-            if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
                 return true;
             }
 
@@ -185,13 +190,13 @@
         }
 
         function spawnFood() {
-            const x = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
-            const y = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
+            const x = Math.floor(Math.random() * (canvas.width / boxSize)) * boxSize;
+            const y = Math.floor(Math.random() * (canvas.height / boxSize)) * boxSize;
             return { x, y };
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvasSize, canvasSize);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             snake.forEach((segment, index) => {
                 ctx.fillStyle = index === 0 ? '#4CAF50' : '#8BC34A';
@@ -200,8 +205,8 @@
                 ctx.strokeRect(segment.x, segment.y, boxSize, boxSize);
             });
 
-            [bot1, bot2].forEach(bot => {
-                bot.forEach(segment => {
+            bots.forEach(bot => {
+                bot.body.forEach(segment => {
                     ctx.fillStyle = '#FF5722';
                     ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
                 });
