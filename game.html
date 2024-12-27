@@ -3,236 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gelişmiş Yılan Oyunu</title>
+    <title>Yılan Oyunu</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            background-color: #282c34;
-            color: white;
-            font-family: Arial, sans-serif;
             height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        #time-counter {
+            font-size: 16px;
+        }
+
+        main {
+            margin-top: 60px;
+            text-align: center;
         }
 
         canvas {
-            display: none;
-            background-color: black;
-            border: 2px solid #4CAF50;
-        }
-
-        #startButton {
+            border: 2px solid #333;
+            background-color: #fff;
             display: block;
+            margin: 0 auto;
+        }
+
+        button {
+            margin-top: 20px;
             padding: 10px 20px;
-            font-size: 20px;
+            font-size: 16px;
+            background-color: #333;
             color: white;
-            background-color: #4CAF50;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            transition: background 0.3s;
         }
 
-        #startButton:hover {
-            background-color: #45a049;
-        }
-
-        .info {
-            display: none;
-            justify-content: space-between;
-            width: 90%;
-            max-width: 400px;
-            margin: 10px 0;
-            font-size: 18px;
-        }
-
-        .controls {
-            display: none;
-            grid-template-areas:
-                ". up ."
-                "left . right"
-                ". down .";
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .control-btn {
-            width: 60px;
-            height: 60px;
-            background: #4CAF50;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: background 0.3s;
-        }
-
-        .control-btn:hover {
-            background: #45a049;
+        button:hover {
+            background-color: #555;
         }
     </style>
 </head>
 <body>
-    <button id="startButton">Başlat</button>
-    <canvas id="gameCanvas"></canvas>
-    <div class="info">
-        <div>Skor: <span id="score">0</span></div>
-        <div>Süre: <span id="timer">0</span> sn</div>
-    </div>
-    <div class="controls">
-        <button class="control-btn" id="up" style="grid-area: up;">↑</button>
-        <button class="control-btn" id="left" style="grid-area: left;">←</button>
-        <button class="control-btn" id="right" style="grid-area: right;">→</button>
-        <button class="control-btn" id="down" style="grid-area: down;">↓</button>
-    </div>
-
+    <header>
+        <h1>Yılan Oyunu</h1>
+        <div id="time-counter">Geçen Süre: 0 sn</div>
+    </header>
+    <main>
+        <canvas id="gameCanvas" width="320" height="320"></canvas>
+        <button id="startGame">Oyunu Başlat</button>
+    </main>
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const startButton = document.getElementById('startButton');
-        const infoDiv = document.querySelector('.info');
-        const controlsDiv = document.querySelector('.controls');
-        const scoreElement = document.getElementById('score');
-        const timerElement = document.getElementById('timer');
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const startGameButton = document.getElementById("startGame");
+        const timeCounter = document.getElementById("time-counter");
 
-        const boxSize = 20;
-        const canvasSize = Math.min(window.innerWidth, window.innerHeight) - 100;
-        canvas.width = Math.floor(canvasSize / boxSize) * boxSize;
-        canvas.height = Math.floor(canvasSize / boxSize) * boxSize;
+        let snake = [{ x: 160, y: 160 }];
+        let direction = { x: 0, y: 0 };
+        let food = { x: 0, y: 0 };
+        let interval;
+        let elapsedTime = 0;
+        let gameTime;
 
-        let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
-        let direction = 'RIGHT';
-        let food = spawnFood();
-        let score = 0;
-        let timeElapsed = 0;
-        let gameInterval;
-        let timerInterval;
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * 20) * 16;
+            food.y = Math.floor(Math.random() * 20) * 16;
+        }
 
-        document.addEventListener('keydown', handleKeyPress);
-        document.getElementById('up').addEventListener('click', () => changeDirection('UP'));
-        document.getElementById('down').addEventListener('click', () => changeDirection('DOWN'));
-        document.getElementById('left').addEventListener('click', () => changeDirection('LEFT'));
-        document.getElementById('right').addEventListener('click', () => changeDirection('RIGHT'));
+        function drawSnake() {
+            ctx.fillStyle = "green";
+            snake.forEach(part => ctx.fillRect(part.x, part.y, 16, 16));
+        }
 
-        startButton.addEventListener('click', () => {
-            startGame();
-        });
+        function drawFood() {
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, 16, 16);
+        }
+
+        function moveSnake() {
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            if (
+                head.x < 0 ||
+                head.y < 0 ||
+                head.x >= canvas.width ||
+                head.y >= canvas.height ||
+                snake.slice(1).some(part => part.x === head.x && part.y === head.y)
+            ) {
+                clearInterval(interval);
+                alert("Oyun bitti!");
+            }
+        }
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawSnake();
+            drawFood();
+            moveSnake();
+        }
 
         function startGame() {
-            startButton.style.display = 'none';
-            canvas.style.display = 'block';
-            infoDiv.style.display = 'flex';
-            controlsDiv.style.display = 'grid';
+            snake = [{ x: 160, y: 160 }];
+            direction = { x: 0, y: 0 };
+            elapsedTime = 0;
 
-            resetGame();
-            startTimer();
-            gameInterval = setInterval(gameLoop, 300);
-        }
-
-        function resetGame() {
-            snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
-            direction = 'RIGHT';
-            food = spawnFood();
-            score = 0;
-            scoreElement.textContent = score;
-        }
-
-        function startTimer() {
-            timeElapsed = 0;
-            timerElement.textContent = timeElapsed;
-            timerInterval = setInterval(() => {
-                timeElapsed++;
-                timerElement.textContent = timeElapsed;
+            spawnFood();
+            clearInterval(interval);
+            interval = setInterval(updateGame, 100);
+            gameTime = setInterval(() => {
+                elapsedTime++;
+                timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
             }, 1000);
         }
 
-        function gameLoop() {
-            if (isGameOver()) {
-                alert('Oyun bitti! Skor: ' + score);
-                clearInterval(gameInterval);
-                clearInterval(timerInterval);
-                startButton.style.display = 'block';
-                canvas.style.display = 'none';
-                infoDiv.style.display = 'none';
-                controlsDiv.style.display = 'none';
-                return;
-            }
+        window.addEventListener("keydown", e => {
+            const key = e.key;
+            if (key === "ArrowUp" && direction.y === 0) direction = { x: 0, y: -16 };
+            if (key === "ArrowDown" && direction.y === 0) direction = { x: 0, y: 16 };
+            if (key === "ArrowLeft" && direction.x === 0) direction = { x: -16, y: 0 };
+            if (key === "ArrowRight" && direction.x === 0) direction = { x: 16, y: 0 };
+        });
 
-            updateSnake();
-            draw();
-        }
+        startGameButton.addEventListener("click", startGame);
 
-        function isGameOver() {
-            const head = snake[0];
-            if (
-                head.x < 0 ||
-                head.x >= canvas.width ||
-                head.y < 0 ||
-                head.y >= canvas.height ||
-                snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
-            ) {
-                return true;
-            }
-            return false;
-        }
-
-        function updateSnake() {
-            const head = { ...snake[0] };
-
-            if (direction === 'UP') head.y -= boxSize;
-            if (direction === 'DOWN') head.y += boxSize;
-            if (direction === 'LEFT') head.x -= boxSize;
-            if (direction === 'RIGHT') head.x += boxSize;
-
-            if (head.x === food.x && head.y === food.y) {
-                snake.unshift(head);
-                food = spawnFood();
-                score++;
-                scoreElement.textContent = score;
-            } else {
-                snake.pop();
-                snake.unshift(head);
-            }
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            snake.forEach((segment, index) => {
-                ctx.fillStyle = index === 0 ? 'green' : '#8BC34A';
-                ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
-            });
-
-            ctx.fillStyle = 'red';
-            ctx.fillRect(food.x, food.y, boxSize, boxSize);
-        }
-
-        function spawnFood() {
-            const x = Math.floor(Math.random() * (canvas.width / boxSize)) * boxSize;
-            const y = Math.floor(Math.random() * (canvas.height / boxSize)) * boxSize;
-            return { x, y };
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
-            if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
-            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
-            if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
-        }
-
-        function changeDirection(newDirection) {
-            if (newDirection === 'UP' && direction !== 'DOWN') direction = 'UP';
-            if (newDirection === 'DOWN' && direction !== 'UP') direction = 'DOWN';
-            if (newDirection === 'LEFT' && direction !== 'RIGHT') direction = 'LEFT';
-            if (newDirection === 'RIGHT' && direction !== 'LEFT') direction = 'RIGHT';
-        }
+        window.addEventListener("beforeunload", () => {
+            clearInterval(gameTime);
+        });
     </script>
 </body>
 </html>
