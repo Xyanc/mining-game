@@ -83,6 +83,16 @@
         let elapsedTime = 0;
         let gameTime;
 
+        // Süreyi localStorage'da sakla
+        if (!localStorage.getItem("elapsedTime")) {
+            localStorage.setItem("elapsedTime", "0");
+        }
+
+        function updateCounter() {
+            elapsedTime = parseInt(localStorage.getItem("elapsedTime"), 10);
+            timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
+        }
+
         function spawnFood() {
             food.x = Math.floor(Math.random() * 20) * 16;
             food.y = Math.floor(Math.random() * 20) * 16;
@@ -130,15 +140,9 @@
         function startGame() {
             snake = [{ x: 160, y: 160 }];
             direction = { x: 0, y: 0 };
-            elapsedTime = 0;
-
             spawnFood();
             clearInterval(interval);
             interval = setInterval(updateGame, 100);
-            gameTime = setInterval(() => {
-                elapsedTime++;
-                timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
-            }, 1000);
         }
 
         window.addEventListener("keydown", e => {
@@ -149,10 +153,23 @@
             if (key === "ArrowRight" && direction.x === 0) direction = { x: 16, y: 0 };
         });
 
-        startGameButton.addEventListener("click", startGame);
+        startGameButton.addEventListener("click", () => {
+            startGame();
+        });
 
-        window.addEventListener("beforeunload", () => {
-            clearInterval(gameTime);
+        // Sayaç her saniye güncellenir
+        gameTime = setInterval(() => {
+            elapsedTime++;
+            localStorage.setItem("elapsedTime", elapsedTime.toString());
+            updateCounter();
+        }, 1000);
+
+        // Sayfa yüklendiğinde sayaç güncellenir
+        window.onload = updateCounter;
+
+        // Sekme veya sayfa kapanınca sayaç sıfırlanır
+        window.addEventListener("unload", () => {
+            localStorage.setItem("elapsedTime", "0");
         });
     </script>
 </body>
