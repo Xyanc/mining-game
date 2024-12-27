@@ -3,224 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bahçe Oyunu</title>
+    <title>Gelişmiş Yılan Oyunu</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: #c2f0c2;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
+            background: #282c34;
+            color: white;
+            font-family: Arial, sans-serif;
         }
 
         .game-container {
-            width: 90%;
-            max-width: 800px;
             text-align: center;
-            background: #ffffff;
+        }
+
+        canvas {
+            background: #000;
+            display: block;
+            margin: 0 auto;
             border: 2px solid #4CAF50;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            position: relative;
         }
 
-        header {
-            margin-bottom: 20px;
-        }
-
-        .garden {
-            background: url('https://via.placeholder.com/800x400/7cfc00/228B22') center/cover;
-            border: 2px solid #4CAF50;
-            border-radius: 10px;
-            position: relative;
-            padding: 20px;
-        }
-
-        .path {
-            width: 100%;
-            height: 40px;
-            background: #8B4513;
-            position: absolute;
-            bottom: 10px;
-            left: 0;
-        }
-
-        .tree {
-            width: 50px;
-            height: 50px;
-            background: url('https://via.placeholder.com/50x50/228B22') center/cover;
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-
-        .plot {
-            width: 100px;
-            height: 100px;
-            background: #8B4513;
-            margin: 10px auto;
-            border-radius: 5px;
-            border: 2px solid #4CAF50;
-            position: relative;
-            display: inline-block;
-        }
-
-        .plot[data-type="wheat"] {
-            background: #FFD700;
-        }
-
-        .plot[data-type="corn"] {
-            background: #FFFF66;
-        }
-
-        .plot .icon {
-            width: 30px;
-            height: 30px;
-            background: transparent;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-        }
-
-        .plot[data-planted="wheat"] .icon {
-            background: url('https://via.placeholder.com/30x30/FFCC66') center/cover;
-        }
-
-        .plot[data-planted="corn"] .icon {
-            background: url('https://via.placeholder.com/30x30/FFFF99') center/cover;
-        }
-
-        .controls {
-            margin: 20px 0;
-        }
-
-        .controls button {
-            margin: 5px;
-            padding: 10px 20px;
-            border: none;
-            background: #4CAF50;
-            color: white;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .controls button:hover {
-            background: #45a049;
-        }
-
-        .notification {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            color: #fff;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 14px;
-            display: none;
+        .score {
+            margin-top: 10px;
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <header>
-            <h1>Bahçe Oyunu</h1>
-            <div class="stats">
-                <p>Altın: <span id="gold">100</span></p>
-            </div>
-        </header>
-        <main>
-            <div class="garden">
-                <!-- Çimler ve Bahçe -->
-                <div class="tree"></div>
-                <div class="plot" data-type="wheat" data-id="1">
-                    <div class="icon"></div>
-                </div>
-                <div class="plot" data-type="corn" data-id="2">
-                    <div class="icon"></div>
-                </div>
-                <div class="path"></div>
-            </div>
-            <div class="controls">
-                <button id="select-wheat">Buğday Seç</button>
-                <button id="select-corn">Mısır Seç</button>
-            </div>
-        </main>
-        <div class="notification" id="notification"></div>
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="score">Skor: <span id="score">0</span></div>
     </div>
+
     <script>
-        let gold = 100;
-        let selectedCrop = null;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const boxSize = 20; // Her bir kare boyutu
+        const canvasSize = 400; // Oyun alanı boyutu
+        let snake = [{ x: boxSize * 5, y: boxSize * 5 }];
+        let direction = 'RIGHT';
+        let food = spawnFood();
+        let score = 0;
 
-        const plots = document.querySelectorAll('.plot');
-        const goldElement = document.getElementById('gold');
-        const wheatButton = document.getElementById('select-wheat');
-        const cornButton = document.getElementById('select-corn');
-        const notification = document.getElementById('notification');
+        document.addEventListener('keydown', changeDirection);
 
-        wheatButton.addEventListener('click', () => selectCrop('wheat'));
-        cornButton.addEventListener('click', () => selectCrop('corn'));
-
-        plots.forEach(plot => {
-            plot.addEventListener('click', () => plantCrop(plot));
-        });
-
-        function selectCrop(crop) {
-            selectedCrop = crop;
-            showNotification(`${crop === 'wheat' ? 'Buğday' : 'Mısır'} seçildi.`);
-        }
-
-        function plantCrop(plot) {
-            if (!selectedCrop) {
-                showNotification('Lütfen bir ürün seçin!');
+        function gameLoop() {
+            if (isGameOver()) {
+                alert('Oyun bitti! Skor: ' + score);
+                resetGame();
                 return;
             }
 
-            const cropCost = selectedCrop === 'wheat' ? 5 : 10;
-            if (gold < cropCost) {
-                showNotification('Yeterli altın yok!');
-                return;
-            }
-
-            if (plot.dataset.planted) {
-                showNotification('Bu alan zaten dolu!');
-                return;
-            }
-
-            const plotType = plot.dataset.type;
-            if (plotType !== selectedCrop) {
-                showNotification(`Bu alana sadece ${plotType === 'wheat' ? 'buğday' : 'mısır'} ekebilirsiniz!`);
-                return;
-            }
-
-            gold -= cropCost;
-            updateGold();
-            plot.dataset.planted = selectedCrop;
-
-            setTimeout(() => {
-                plot.dataset.planted = `${selectedCrop}-ready`;
-                showNotification(`${selectedCrop === 'wheat' ? 'Buğday' : 'Mısır'} hasata hazır!`);
-            }, 5000);
+            updateSnake();
+            draw();
         }
 
-        function updateGold() {
-            goldElement.textContent = gold;
+        function resetGame() {
+            snake = [{ x: boxSize * 5, y: boxSize * 5 }];
+            direction = 'RIGHT';
+            food = spawnFood();
+            score = 0;
+            document.getElementById('score').textContent = score;
         }
 
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 3000);
+        function updateSnake() {
+            const head = { ...snake[0] };
+
+            // Yönlere göre başı hareket ettir
+            if (direction === 'UP') head.y -= boxSize;
+            if (direction === 'DOWN') head.y += boxSize;
+            if (direction === 'LEFT') head.x -= boxSize;
+            if (direction === 'RIGHT') head.x += boxSize;
+
+            // Yemi yerse
+            if (head.x === food.x && head.y === food.y) {
+                snake.unshift(head);
+                food = spawnFood();
+                score++;
+                document.getElementById('score').textContent = score;
+            } else {
+                snake.pop();
+                snake.unshift(head);
+            }
         }
+
+        function isGameOver() {
+            const head = snake[0];
+
+            // Duvarlara çarpma
+            if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
+                return true;
+            }
+
+            // Kendine çarpma
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        function changeDirection(event) {
+            if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+            if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+            if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        }
+
+        function spawnFood() {
+            const x = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
+            const y = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
+
+            // Yiyecek yılanın üstünde oluşursa tekrar oluştur
+            for (const segment of snake) {
+                if (segment.x === x && segment.y === y) {
+                    return spawnFood();
+                }
+            }
+
+            return { x, y };
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvasSize, canvasSize);
+
+            // Yılanı çiz
+            snake.forEach((segment, index) => {
+                ctx.fillStyle = index === 0 ? '#4CAF50' : '#8BC34A'; // Baş farklı renk
+                ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
+                ctx.strokeStyle = '#000';
+                ctx.strokeRect(segment.x, segment.y, boxSize, boxSize);
+            });
+
+            // Yemi çiz
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, boxSize, boxSize);
+        }
+
+        setInterval(gameLoop, 100); // Oyun döngüsü
     </script>
 </body>
 </html>
