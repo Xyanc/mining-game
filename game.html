@@ -9,6 +9,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            flex-direction: column;
             height: 100vh;
             margin: 0;
             background: #282c34;
@@ -31,25 +32,72 @@
             margin-top: 10px;
             font-size: 20px;
         }
+
+        .controls {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background: #4CAF50;
+            border: none;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .control-btn:hover {
+            background: #45a049;
+        }
+
+        .control-btn:active {
+            background: #3e8e41;
+        }
+
+        .placeholder {
+            visibility: hidden;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
         <canvas id="gameCanvas" width="400" height="400"></canvas>
         <div class="score">Skor: <span id="score">0</span></div>
+        <div class="controls">
+            <button class="control-btn placeholder"></button>
+            <button class="control-btn" id="up">↑</button>
+            <button class="control-btn placeholder"></button>
+            <button class="control-btn" id="left">←</button>
+            <button class="control-btn" id="down">↓</button>
+            <button class="control-btn" id="right">→</button>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const boxSize = 20; // Her bir kare boyutu
-        const canvasSize = 400; // Oyun alanı boyutu
+        const boxSize = 20;
+        const canvasSize = 400;
         let snake = [{ x: boxSize * 5, y: boxSize * 5 }];
         let direction = 'RIGHT';
         let food = spawnFood();
         let score = 0;
 
-        document.addEventListener('keydown', changeDirection);
+        document.addEventListener('keydown', handleKeyPress);
+        document.getElementById('up').addEventListener('click', () => changeDirection('UP'));
+        document.getElementById('down').addEventListener('click', () => changeDirection('DOWN'));
+        document.getElementById('left').addEventListener('click', () => changeDirection('LEFT'));
+        document.getElementById('right').addEventListener('click', () => changeDirection('RIGHT'));
 
         function gameLoop() {
             if (isGameOver()) {
@@ -73,13 +121,11 @@
         function updateSnake() {
             const head = { ...snake[0] };
 
-            // Yönlere göre başı hareket ettir
             if (direction === 'UP') head.y -= boxSize;
             if (direction === 'DOWN') head.y += boxSize;
             if (direction === 'LEFT') head.x -= boxSize;
             if (direction === 'RIGHT') head.x += boxSize;
 
-            // Yemi yerse
             if (head.x === food.x && head.y === food.y) {
                 snake.unshift(head);
                 food = spawnFood();
@@ -94,12 +140,10 @@
         function isGameOver() {
             const head = snake[0];
 
-            // Duvarlara çarpma
             if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
                 return true;
             }
 
-            // Kendine çarpma
             for (let i = 1; i < snake.length; i++) {
                 if (head.x === snake[i].x && head.y === snake[i].y) {
                     return true;
@@ -109,18 +153,28 @@
             return false;
         }
 
-        function changeDirection(event) {
-            if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
-            if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
-            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
-            if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        function handleKeyPress(event) {
+            if (event.key === 'ArrowUp') changeDirection('UP');
+            if (event.key === 'ArrowDown') changeDirection('DOWN');
+            if (event.key === 'ArrowLeft') changeDirection('LEFT');
+            if (event.key === 'ArrowRight') changeDirection('RIGHT');
+        }
+
+        function changeDirection(newDirection) {
+            if (
+                (newDirection === 'UP' && direction !== 'DOWN') ||
+                (newDirection === 'DOWN' && direction !== 'UP') ||
+                (newDirection === 'LEFT' && direction !== 'RIGHT') ||
+                (newDirection === 'RIGHT' && direction !== 'LEFT')
+            ) {
+                direction = newDirection;
+            }
         }
 
         function spawnFood() {
             const x = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
             const y = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
 
-            // Yiyecek yılanın üstünde oluşursa tekrar oluştur
             for (const segment of snake) {
                 if (segment.x === x && segment.y === y) {
                     return spawnFood();
@@ -133,20 +187,18 @@
         function draw() {
             ctx.clearRect(0, 0, canvasSize, canvasSize);
 
-            // Yılanı çiz
             snake.forEach((segment, index) => {
-                ctx.fillStyle = index === 0 ? '#4CAF50' : '#8BC34A'; // Baş farklı renk
+                ctx.fillStyle = index === 0 ? '#4CAF50' : '#8BC34A';
                 ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
                 ctx.strokeStyle = '#000';
                 ctx.strokeRect(segment.x, segment.y, boxSize, boxSize);
             });
 
-            // Yemi çiz
             ctx.fillStyle = 'red';
             ctx.fillRect(food.x, food.y, boxSize, boxSize);
         }
 
-        setInterval(gameLoop, 100); // Oyun döngüsü
+        setInterval(gameLoop, 100);
     </script>
 </body>
 </html>
