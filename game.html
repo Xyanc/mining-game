@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobil Uyumlu Yılan Oyunu</title>
+    <title>Yılan Oyunu</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,10 +47,33 @@
 
         #controls {
             display: grid;
-            grid-template-columns: repeat(3, 60px);
+            grid-template-areas:
+                "up up up"
+                "left center right"
+                "down down down";
             gap: 10px;
             margin-top: 20px;
             justify-content: center;
+        }
+
+        #up {
+            grid-area: up;
+        }
+
+        #left {
+            grid-area: left;
+        }
+
+        #right {
+            grid-area: right;
+        }
+
+        #down {
+            grid-area: down;
+        }
+
+        #center {
+            grid-area: center;
         }
 
         .control-btn {
@@ -96,14 +119,17 @@
         <div id="controls">
             <button class="control-btn" id="up">↑</button>
             <button class="control-btn" id="left">←</button>
+            <button class="control-btn" id="center" disabled></button>
             <button class="control-btn" id="right">→</button>
             <button class="control-btn" id="down">↓</button>
         </div>
+        <button id="restartGame" style="display: none;">Tekrar Oyna</button>
     </main>
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
         const startGameButton = document.getElementById("startGame");
+        const restartGameButton = document.getElementById("restartGame");
         const timeCounter = document.getElementById("time-counter");
 
         const upButton = document.getElementById("up");
@@ -117,6 +143,7 @@
         let interval;
         let elapsedTime = 0;
         let gameTime;
+        let gameRunning = false;
 
         function spawnFood() {
             food.x = Math.floor(Math.random() * 20) * 16;
@@ -151,7 +178,9 @@
                 snake.slice(1).some(part => part.x === head.x && part.y === head.y)
             ) {
                 clearInterval(interval);
-                alert("Oyun bitti!");
+                clearInterval(gameTime);
+                gameRunning = false;
+                restartGameButton.style.display = "block";
             }
         }
 
@@ -166,15 +195,20 @@
             snake = [{ x: 160, y: 160 }];
             direction = { x: 0, y: 0 };
             elapsedTime = 0;
+            gameRunning = true;
 
             spawnFood();
             clearInterval(interval);
-            interval = setInterval(updateGame, 100);
+            interval = setInterval(updateGame, 200);
             if (gameTime) clearInterval(gameTime);
             gameTime = setInterval(() => {
-                elapsedTime++;
-                timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
+                if (gameRunning) {
+                    elapsedTime++;
+                    timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
+                }
             }, 1000);
+
+            restartGameButton.style.display = "none";
         }
 
         // Mobil butonlar için yönlendirme
@@ -195,6 +229,13 @@
         });
 
         startGameButton.addEventListener("click", startGame);
+        restartGameButton.addEventListener("click", startGame);
+
+        // Sekme değişikliğinde sayaç sıfırlanır
+        window.addEventListener("blur", () => {
+            elapsedTime = 0;
+            timeCounter.textContent = "Geçen Süre: 0 sn";
+        });
     </script>
 </body>
 </html>
