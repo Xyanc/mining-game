@@ -36,6 +36,10 @@
         main {
             margin-top: 60px;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         canvas {
@@ -47,13 +51,14 @@
 
         #controls {
             display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
             grid-template-areas:
                 "up up up"
                 "left center right"
                 "down down down";
-            gap: 10px;
-            margin-top: 20px;
-            justify-content: center;
         }
 
         #up {
@@ -70,10 +75,6 @@
 
         #down {
             grid-area: down;
-        }
-
-        #center {
-            grid-area: center;
         }
 
         .control-btn {
@@ -106,6 +107,41 @@
         button:hover {
             background-color: #555;
         }
+
+        #restartGame {
+            margin-top: 20px;
+            display: none;
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #startGame {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        @media (max-width: 768px) {
+            canvas {
+                width: 100%;
+                height: auto;
+            }
+
+            #controls {
+                grid-template-columns: repeat(3, 80px);
+                grid-template-areas:
+                    "up up up"
+                    "left center right"
+                    "down down down";
+            }
+
+            .control-btn {
+                width: 80px;
+                height: 80px;
+                font-size: 24px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -119,11 +155,10 @@
         <div id="controls">
             <button class="control-btn" id="up">↑</button>
             <button class="control-btn" id="left">←</button>
-            <button class="control-btn" id="center" disabled></button>
             <button class="control-btn" id="right">→</button>
             <button class="control-btn" id="down">↓</button>
         </div>
-        <button id="restartGame" style="display: none;">Tekrar Oyna</button>
+        <button id="restartGame">Tekrar Oyna</button>
     </main>
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -211,30 +246,36 @@
             restartGameButton.style.display = "none";
         }
 
-        // Mobil butonlar için yönlendirme
+        // Yön butonları için işlevler
         upButton.addEventListener("click", () => {
-            if (direction.y === 0) direction = { x: 0, y: -16 };
+            if (direction.y === 0 && gameRunning) direction = { x: 0, y: -16 };
         });
 
         downButton.addEventListener("click", () => {
-            if (direction.y === 0) direction = { x: 0, y: 16 };
+            if (direction.y === 0 && gameRunning) direction = { x: 0, y: 16 };
         });
 
         leftButton.addEventListener("click", () => {
-            if (direction.x === 0) direction = { x: -16, y: 0 };
+            if (direction.x === 0 && gameRunning) direction = { x: -16, y: 0 };
         });
 
         rightButton.addEventListener("click", () => {
-            if (direction.x === 0) direction = { x: 16, y: 0 };
+            if (direction.x === 0 && gameRunning) direction = { x: 16, y: 0 };
         });
 
+        // Oyunu başlat butonu
         startGameButton.addEventListener("click", startGame);
+
+        // Tekrar oyna butonu
         restartGameButton.addEventListener("click", startGame);
 
         // Sekme değişikliğinde sayaç sıfırlanır
         window.addEventListener("blur", () => {
-            elapsedTime = 0;
-            timeCounter.textContent = "Geçen Süre: 0 sn";
+            if (gameRunning) {
+                clearInterval(gameTime);
+                elapsedTime = 0;
+                timeCounter.textContent = "Geçen Süre: 0 sn";
+            }
         });
     </script>
 </body>
