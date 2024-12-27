@@ -23,8 +23,24 @@
             border: 2px solid #4CAF50;
         }
 
+        #startButton {
+            display: block;
+            padding: 10px 20px;
+            font-size: 20px;
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #startButton:hover {
+            background-color: #45a049;
+        }
+
         .info {
-            display: flex;
+            display: none;
             justify-content: space-between;
             width: 90%;
             max-width: 400px;
@@ -33,7 +49,7 @@
         }
 
         .controls {
-            display: grid;
+            display: none;
             grid-template-areas:
                 ". up ."
                 "left . right"
@@ -64,6 +80,7 @@
     </style>
 </head>
 <body>
+    <button id="startButton">Başlat</button>
     <canvas id="gameCanvas"></canvas>
     <div class="info">
         <div>Skor: <span id="score">0</span></div>
@@ -79,13 +96,16 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+        const infoDiv = document.querySelector('.info');
+        const controlsDiv = document.querySelector('.controls');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+
         const boxSize = 20;
         const canvasSize = Math.min(window.innerWidth, window.innerHeight) - 100;
         canvas.width = Math.floor(canvasSize / boxSize) * boxSize;
         canvas.height = Math.floor(canvasSize / boxSize) * boxSize;
-
-        const scoreElement = document.getElementById('score');
-        const timerElement = document.getElementById('timer');
 
         let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
         let bots = [
@@ -97,6 +117,7 @@
         let score = 0;
         let timeElapsed = 0;
         let gameInterval;
+        let timerInterval;
 
         document.addEventListener('keydown', handleKeyPress);
         document.getElementById('up').addEventListener('click', () => changeDirection('UP'));
@@ -104,25 +125,34 @@
         document.getElementById('left').addEventListener('click', () => changeDirection('LEFT'));
         document.getElementById('right').addEventListener('click', () => changeDirection('RIGHT'));
 
+        startButton.addEventListener('click', () => {
+            startGame();
+        });
+
         window.addEventListener('load', startTimer);
         window.addEventListener('beforeunload', resetTimer);
 
         function startTimer() {
-            setInterval(() => {
+            timerInterval = setInterval(() => {
                 timeElapsed++;
                 timerElement.textContent = timeElapsed;
             }, 1000);
         }
 
         function resetTimer() {
+            clearInterval(timerInterval);
             timeElapsed = 0;
             timerElement.textContent = timeElapsed;
         }
 
         function startGame() {
+            startButton.style.display = 'none';
             canvas.style.display = 'block';
+            infoDiv.style.display = 'flex';
+            controlsDiv.style.display = 'grid';
+
             resetGame();
-            gameInterval = setInterval(gameLoop, 300); // Yavaşlatılmış hız
+            gameInterval = setInterval(gameLoop, 300); // Hız azaltıldı
         }
 
         function gameLoop() {
@@ -183,14 +213,6 @@
             } else {
                 bot.body.pop();
                 bot.body.unshift(head);
-            }
-        }
-
-        function getBotDirection(botHead, target) {
-            if (Math.abs(botHead.x - target.x) > Math.abs(botHead.y - target.y)) {
-                return botHead.x < target.x ? 'RIGHT' : 'LEFT';
-            } else {
-                return botHead.y < target.y ? 'DOWN' : 'UP';
             }
         }
 
