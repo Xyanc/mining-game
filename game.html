@@ -290,4 +290,10 @@
         });
 
         // Pause the game and reset score when the tab is lost or the user navigates away
-        window.addEventListener('blur', ()
+        window.addEventListener('blur', () => {
+            clearInterval(gameInterval);
+            gameOver();
+        });
+    </script>
+</body>
+</html>
