@@ -17,27 +17,22 @@
             font-family: Arial, sans-serif;
         }
 
-        .game-container {
-            text-align: center;
-        }
-
         canvas {
             background: #000;
-            display: block;
-            margin: 0 auto;
             border: 2px solid #4CAF50;
         }
 
         .score {
-            margin-top: 10px;
-            font-size: 20px;
+            font-size: 18px;
+            margin: 10px 0;
         }
 
         .controls {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
         }
 
         .control-btn {
@@ -63,24 +58,16 @@
         .control-btn:active {
             background: #3e8e41;
         }
-
-        .placeholder {
-            visibility: hidden;
-        }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-        <div class="score">Skor: <span id="score">0</span></div>
-        <div class="controls">
-            <button class="control-btn placeholder"></button>
-            <button class="control-btn" id="up">↑</button>
-            <button class="control-btn placeholder"></button>
-            <button class="control-btn" id="left">←</button>
-            <button class="control-btn" id="down">↓</button>
-            <button class="control-btn" id="right">→</button>
-        </div>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <div class="score">Skor: <span id="score">0</span></div>
+    <div class="controls">
+        <button class="control-btn" id="left">←</button>
+        <button class="control-btn" id="up">↑</button>
+        <button class="control-btn" id="down">↓</button>
+        <button class="control-btn" id="right">→</button>
     </div>
 
     <script>
@@ -88,8 +75,15 @@
         const ctx = canvas.getContext('2d');
         const boxSize = 20;
         const canvasSize = 400;
-        let snake = [{ x: boxSize * 5, y: boxSize * 5 }];
+
+        let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
+        let bot1 = [{ x: 3 * boxSize, y: 3 * boxSize }];
+        let bot2 = [{ x: 7 * boxSize, y: 7 * boxSize }];
+
         let direction = 'RIGHT';
+        let bot1Direction = 'DOWN';
+        let bot2Direction = 'UP';
+
         let food = spawnFood();
         let score = 0;
 
@@ -100,18 +94,21 @@
         document.getElementById('right').addEventListener('click', () => changeDirection('RIGHT'));
 
         function gameLoop() {
-            if (isGameOver()) {
+            if (isGameOver(snake)) {
                 alert('Oyun bitti! Skor: ' + score);
                 resetGame();
                 return;
             }
 
             updateSnake();
+            updateBot(bot1, bot1Direction);
+            updateBot(bot2, bot2Direction);
+
             draw();
         }
 
         function resetGame() {
-            snake = [{ x: boxSize * 5, y: boxSize * 5 }];
+            snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
             direction = 'RIGHT';
             food = spawnFood();
             score = 0;
@@ -137,7 +134,19 @@
             }
         }
 
-        function isGameOver() {
+        function updateBot(bot, botDirection) {
+            const head = { ...bot[0] };
+
+            if (botDirection === 'UP') head.y -= boxSize;
+            if (botDirection === 'DOWN') head.y += boxSize;
+            if (botDirection === 'LEFT') head.x -= boxSize;
+            if (botDirection === 'RIGHT') head.x += boxSize;
+
+            bot.pop();
+            bot.unshift(head);
+        }
+
+        function isGameOver(snake) {
             const head = snake[0];
 
             if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize) {
@@ -174,13 +183,6 @@
         function spawnFood() {
             const x = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
             const y = Math.floor(Math.random() * (canvasSize / boxSize)) * boxSize;
-
-            for (const segment of snake) {
-                if (segment.x === x && segment.y === y) {
-                    return spawnFood();
-                }
-            }
-
             return { x, y };
         }
 
@@ -194,11 +196,18 @@
                 ctx.strokeRect(segment.x, segment.y, boxSize, boxSize);
             });
 
+            [bot1, bot2].forEach(bot => {
+                bot.forEach(segment => {
+                    ctx.fillStyle = '#FF5722';
+                    ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
+                });
+            });
+
             ctx.fillStyle = 'red';
             ctx.fillRect(food.x, food.y, boxSize, boxSize);
         }
 
-        setInterval(gameLoop, 100);
+        setInterval(gameLoop, 150);
     </script>
 </body>
 </html>
