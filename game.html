@@ -27,7 +27,7 @@
         }
 
         #gameCanvas {
-            border: 2px solid black;
+            border: 2px solid #333;
             display: block;
             margin: 0 auto;
             background-color: #fff;
@@ -39,19 +39,37 @@
             right: 10px;
             font-size: 18px;
             color: #333;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
         }
 
         #controls {
             margin-top: 20px;
             display: flex;
             justify-content: center;
+            gap: 10px;
         }
 
         #controls button {
-            padding: 10px;
-            font-size: 18px;
-            margin: 5px;
+            padding: 15px;
+            font-size: 20px;
             cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        #controls button:hover {
+            background-color: #45a049;
+            transform: scale(1.1);
+        }
+
+        #controls button:active {
+            transform: scale(0.95);
         }
 
         #gameControls {
@@ -61,25 +79,41 @@
         }
 
         #startBtn, #restartBtn {
-            padding: 15px;
+            padding: 15px 30px;
             font-size: 20px;
             cursor: pointer;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 5px;
             margin-top: 10px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.2s;
         }
 
-        #gameControls button {
-            margin-bottom: 10px;
+        #startBtn:hover, #restartBtn:hover {
+            background-color: #007B8A;
+            transform: scale(1.05);
+        }
+
+        #startBtn:active, #restartBtn:active {
+            transform: scale(0.95);
         }
 
         @media (max-width: 600px) {
             #controls button {
                 font-size: 16px;
-                padding: 8px;
+                padding: 12px;
             }
 
             #gameCanvas {
                 width: 90vw;
                 height: 90vw;
+            }
+
+            #startBtn, #restartBtn {
+                padding: 12px 25px;
+                font-size: 18px;
             }
         }
     </style>
@@ -219,6 +253,21 @@
         downBtn.addEventListener('click', () => changeDirection('DOWN'));
         leftBtn.addEventListener('click', () => changeDirection('LEFT'));
         rightBtn.addEventListener('click', () => changeDirection('RIGHT'));
+
+        // Sekmeden çıkıldığında sayaç sıfırlanacak
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                score = 0;
+                scoreElement.textContent = score;
+            }
+        });
+
+        // Sekmeye geri dönüldüğünde oyun devam eder
+        window.addEventListener('focus', function() {
+            if (gameInterval === null) {
+                gameInterval = setInterval(updateGame, 100);
+            }
+        });
 
         // Pause the game and reset score when the tab is lost or the user navigates away
         window.addEventListener('blur', () => {
