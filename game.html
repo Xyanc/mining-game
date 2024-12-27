@@ -108,10 +108,6 @@
         canvas.height = Math.floor(canvasSize / boxSize) * boxSize;
 
         let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
-        let bots = [
-            { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: 'yellow' },
-            { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: 'red' }
-        ];
         let direction = 'RIGHT';
         let food = spawnFood();
         let score = 0;
@@ -137,20 +133,7 @@
 
             resetGame();
             startTimer();
-            gameInterval = setInterval(gameLoop, 300); // Hız azaltıldı
-        }
-
-        function gameLoop() {
-            if (isGameOver(snake, true)) {
-                alert('Oyun bitti! Skor: ' + score);
-                clearInterval(gameInterval);
-                resetGame();
-                return;
-            }
-
-            updateSnake();
-            bots.forEach(bot => updateBot(bot));
-            draw();
+            gameInterval = setInterval(gameLoop, 300);
         }
 
         function resetGame() {
@@ -159,10 +142,6 @@
             food = spawnFood();
             score = 0;
             scoreElement.textContent = score;
-            bots = [
-                { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: 'yellow' },
-                { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: 'red' }
-            ];
         }
 
         function startTimer() {
@@ -172,6 +151,36 @@
                 timeElapsed++;
                 timerElement.textContent = timeElapsed;
             }, 1000);
+        }
+
+        function gameLoop() {
+            if (isGameOver()) {
+                alert('Oyun bitti! Skor: ' + score);
+                clearInterval(gameInterval);
+                clearInterval(timerInterval);
+                startButton.style.display = 'block';
+                canvas.style.display = 'none';
+                infoDiv.style.display = 'none';
+                controlsDiv.style.display = 'none';
+                return;
+            }
+
+            updateSnake();
+            draw();
+        }
+
+        function isGameOver() {
+            const head = snake[0];
+            if (
+                head.x < 0 ||
+                head.x >= canvas.width ||
+                head.y < 0 ||
+                head.y >= canvas.height ||
+                snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
+            ) {
+                return true;
+            }
+            return false;
         }
 
         function updateSnake() {
@@ -193,37 +202,12 @@
             }
         }
 
-        function updateBot(bot) {
-            const head = { ...bot.body[0] };
-
-            const botDirection = getBotDirection(bot.body[0], food);
-            if (botDirection === 'UP') head.y -= boxSize;
-            if (botDirection === 'DOWN') head.y += boxSize;
-            if (botDirection === 'LEFT') head.x -= boxSize;
-            if (botDirection === 'RIGHT') head.x += boxSize;
-
-            if (head.x === food.x && head.y === food.y) {
-                bot.body.unshift(head);
-                food = spawnFood();
-            } else {
-                bot.body.pop();
-                bot.body.unshift(head);
-            }
-        }
-
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             snake.forEach((segment, index) => {
                 ctx.fillStyle = index === 0 ? 'green' : '#8BC34A';
                 ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
-            });
-
-            bots.forEach(bot => {
-                bot.body.forEach(segment => {
-                    ctx.fillStyle = bot.color;
-                    ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
-                });
             });
 
             ctx.fillStyle = 'red';
@@ -234,6 +218,20 @@
             const x = Math.floor(Math.random() * (canvas.width / boxSize)) * boxSize;
             const y = Math.floor(Math.random() * (canvas.height / boxSize)) * boxSize;
             return { x, y };
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+            if (event.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+            if (event.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+            if (event.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+        }
+
+        function changeDirection(newDirection) {
+            if (newDirection === 'UP' && direction !== 'DOWN') direction = 'UP';
+            if (newDirection === 'DOWN' && direction !== 'UP') direction = 'DOWN';
+            if (newDirection === 'LEFT' && direction !== 'RIGHT') direction = 'LEFT';
+            if (newDirection === 'RIGHT' && direction !== 'LEFT') direction = 'RIGHT';
         }
     </script>
 </body>
