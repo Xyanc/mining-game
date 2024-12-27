@@ -47,12 +47,20 @@
             border: 2px solid #4CAF50;
         }
 
-        .plot[data-planted="wheat"] {
-            background: url('https://via.placeholder.com/100/FFCC66') center/cover;
+        .plot .icon {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 30px;
+            height: 30px;
         }
 
-        .plot[data-planted="corn"] {
-            background: url('https://via.placeholder.com/100/FFFF99') center/cover;
+        .plot[data-planted="wheat"] .icon {
+            background: url('https://via.placeholder.com/30x30/FFCC66') center/cover;
+        }
+
+        .plot[data-planted="corn"] .icon {
+            background: url('https://via.placeholder.com/30x30/FFFF99') center/cover;
         }
 
         .controls button {
@@ -82,49 +90,73 @@
         </header>
         <main>
             <div class="garden">
-                <!-- Ekilebilir alanlar -->
-                <div class="plot" data-id="1"></div>
-                <div class="plot" data-id="2"></div>
-                <div class="plot" data-id="3"></div>
-                <div class="plot" data-id="4"></div>
+                <!-- Buğday bölümü -->
+                <div class="plot" data-type="wheat" data-id="1">
+                    <div class="icon"></div>
+                </div>
+                <!-- Mısır bölümü -->
+                <div class="plot" data-type="corn" data-id="2">
+                    <div class="icon"></div>
+                </div>
             </div>
             <div class="controls">
-                <button id="plant-wheat">Buğday Ekle (5 Altın)</button>
-                <button id="plant-corn">Mısır Ekle (10 Altın)</button>
+                <button id="select-wheat">Buğday Seç</button>
+                <button id="select-corn">Mısır Seç</button>
             </div>
         </main>
     </div>
     <script>
         let gold = 100;
+        let selectedCrop = null;
 
         const plots = document.querySelectorAll('.plot');
         const goldElement = document.getElementById('gold');
-        const plantWheatButton = document.getElementById('plant-wheat');
-        const plantCornButton = document.getElementById('plant-corn');
+        const wheatButton = document.getElementById('select-wheat');
+        const cornButton = document.getElementById('select-corn');
 
-        plantWheatButton.addEventListener('click', () => plantCrop('wheat', 5));
-        plantCornButton.addEventListener('click', () => plantCrop('corn', 10));
+        wheatButton.addEventListener('click', () => selectCrop('wheat'));
+        cornButton.addEventListener('click', () => selectCrop('corn'));
 
-        function plantCrop(type, cost) {
-            if (gold < cost) {
+        plots.forEach(plot => {
+            plot.addEventListener('click', () => plantCrop(plot));
+        });
+
+        function selectCrop(crop) {
+            selectedCrop = crop;
+            alert(`${crop === 'wheat' ? 'Buğday' : 'Mısır'} seçildi!`);
+        }
+
+        function plantCrop(plot) {
+            if (!selectedCrop) {
+                alert('Lütfen bir ürün seçin!');
+                return;
+            }
+
+            const cropCost = selectedCrop === 'wheat' ? 5 : 10;
+            if (gold < cropCost) {
                 alert('Yeterli altın yok!');
                 return;
             }
 
-            const emptyPlot = Array.from(plots).find(plot => !plot.dataset.planted);
-            if (!emptyPlot) {
-                alert('Tüm alanlar dolu!');
+            if (plot.dataset.planted) {
+                alert('Bu alan zaten dolu!');
                 return;
             }
 
-            gold -= cost;
+            const plotType = plot.dataset.type;
+            if (plotType !== selectedCrop) {
+                alert(`Bu alana sadece ${plotType === 'wheat' ? 'buğday' : 'mısır'} ekebilirsiniz!`);
+                return;
+            }
+
+            gold -= cropCost;
             updateGold();
-            emptyPlot.dataset.planted = type;
+            plot.dataset.planted = selectedCrop;
 
             setTimeout(() => {
-                emptyPlot.dataset.planted = `${type}-ready`;
-                alert(`${type === 'wheat' ? 'Buğday' : 'Mısır'} hasata hazır!`);
-            }, 5000); // 5 saniye bekleme süresi
+                plot.dataset.planted = `${selectedCrop}-ready`;
+                alert(`${selectedCrop === 'wheat' ? 'Buğday' : 'Mısır'} hasata hazır!`);
+            }, 5000);
         }
 
         function updateGold() {
