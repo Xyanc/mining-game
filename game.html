@@ -19,6 +19,7 @@
             height: 100vh;
             background-color: #f4f4f4;
             flex-direction: column;
+            overflow: hidden;
         }
 
         #gameArea {
@@ -42,19 +43,30 @@
             background-color: rgba(255, 255, 255, 0.7);
             padding: 5px;
             border-radius: 5px;
+            z-index: 1; /* Sayaç önde olsun */
         }
 
         #controls {
             margin-top: 20px;
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .direction-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .horizontal-buttons {
+            display: flex;
             gap: 10px;
         }
 
         #controls button {
-            padding: 10px 20px;
-            font-size: 18px;
+            padding: 12px 20px;
+            font-size: 20px;
             cursor: pointer;
             background-color: #4CAF50;
             color: white;
@@ -125,14 +137,19 @@
         <div id="scoreContainer">
             <span>Skor: <span id="score">0</span></span>
         </div>
+
+        <!-- Butonlar -->
         <div id="controls">
-            <button id="upBtn">↑</button>
-            <div style="display: flex; flex-direction: row;">
-                <button id="leftBtn">←</button>
-                <button id="rightBtn">→</button>
+            <div class="direction-buttons">
+                <button id="upBtn">↑</button>
+                <div class="horizontal-buttons">
+                    <button id="leftBtn">←</button>
+                    <button id="rightBtn">→</button>
+                </div>
+                <button id="downBtn">↓</button>
             </div>
-            <button id="downBtn">↓</button>
         </div>
+
         <div id="gameControls">
             <button id="startBtn" onclick="startGame()">Başla</button>
             <button id="restartBtn" onclick="restartGame()" style="display:none;">Tekrar Oyna</button>
@@ -273,10 +290,4 @@
         });
 
         // Pause the game and reset score when the tab is lost or the user navigates away
-        window.addEventListener('blur', () => {
-            clearInterval(gameInterval);
-            gameOver();
-        });
-    </script>
-</body>
-</html>
+        window.addEventListener('blur', ()
