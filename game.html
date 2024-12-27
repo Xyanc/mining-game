@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yılan Oyunu</title>
+    <title>Gelişmiş Yılan Oyunu</title>
     <style>
         body {
             display: flex;
@@ -109,8 +109,8 @@
 
         let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
         let bots = [
-            { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: '#FFC107' },
-            { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: '#FF5722' }
+            { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: 'yellow' },
+            { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: 'red' }
         ];
         let direction = 'RIGHT';
         let food = spawnFood();
@@ -129,22 +129,6 @@
             startGame();
         });
 
-        window.addEventListener('load', startTimer);
-        window.addEventListener('beforeunload', resetTimer);
-
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeElapsed++;
-                timerElement.textContent = timeElapsed;
-            }, 1000);
-        }
-
-        function resetTimer() {
-            clearInterval(timerInterval);
-            timeElapsed = 0;
-            timerElement.textContent = timeElapsed;
-        }
-
         function startGame() {
             startButton.style.display = 'none';
             canvas.style.display = 'block';
@@ -152,6 +136,7 @@
             controlsDiv.style.display = 'grid';
 
             resetGame();
+            startTimer();
             gameInterval = setInterval(gameLoop, 300); // Hız azaltıldı
         }
 
@@ -159,6 +144,7 @@
             if (isGameOver(snake, true)) {
                 alert('Oyun bitti! Skor: ' + score);
                 clearInterval(gameInterval);
+                resetGame();
                 return;
             }
 
@@ -174,9 +160,18 @@
             score = 0;
             scoreElement.textContent = score;
             bots = [
-                { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: '#FFC107' },
-                { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: '#FF5722' }
+                { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: 'yellow' },
+                { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: 'red' }
             ];
+        }
+
+        function startTimer() {
+            timeElapsed = 0;
+            timerElement.textContent = timeElapsed;
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                timerElement.textContent = timeElapsed;
+            }, 1000);
         }
 
         function updateSnake() {
@@ -216,34 +211,11 @@
             }
         }
 
-        function isGameOver(snakeBody, isPlayer) {
-            const head = snakeBody[0];
-
-            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
-                return true;
-            }
-
-            const allBodies = isPlayer ? bots.flatMap(bot => bot.body) : snake;
-            for (let segment of allBodies) {
-                if (head.x === segment.x && head.y === segment.y) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        function spawnFood() {
-            const x = Math.floor(Math.random() * (canvas.width / boxSize)) * boxSize;
-            const y = Math.floor(Math.random() * (canvas.height / boxSize)) * boxSize;
-            return { x, y };
-        }
-
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             snake.forEach((segment, index) => {
-                ctx.fillStyle = index === 0 ? '#4CAF50' : '#8BC34A';
+                ctx.fillStyle = index === 0 ? 'green' : '#8BC34A';
                 ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
             });
 
@@ -258,18 +230,10 @@
             ctx.fillRect(food.x, food.y, boxSize, boxSize);
         }
 
-        function handleKeyPress(e) {
-            if (e.key === "ArrowUp") changeDirection("UP");
-            if (e.key === "ArrowDown") changeDirection("DOWN");
-            if (e.key === "ArrowLeft") changeDirection("LEFT");
-            if (e.key === "ArrowRight") changeDirection("RIGHT");
-        }
-
-        function changeDirection(newDirection) {
-            if (newDirection === 'UP' && direction !== 'DOWN') direction = 'UP';
-            if (newDirection === 'DOWN' && direction !== 'UP') direction = 'DOWN';
-            if (newDirection === 'LEFT' && direction !== 'RIGHT') direction = 'LEFT';
-            if (newDirection === 'RIGHT' && direction !== 'LEFT') direction = 'RIGHT';
+        function spawnFood() {
+            const x = Math.floor(Math.random() * (canvas.width / boxSize)) * boxSize;
+            const y = Math.floor(Math.random() * (canvas.height / boxSize)) * boxSize;
+            return { x, y };
         }
     </script>
 </body>
