@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yılan Oyunu</title>
+    <title>Mobil Uyumlu Yılan Oyunu</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,6 +45,30 @@
             margin: 0 auto;
         }
 
+        #controls {
+            display: grid;
+            grid-template-columns: repeat(3, 60px);
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            background-color: #333;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .control-btn:hover {
+            background-color: #555;
+        }
+
         button {
             margin-top: 20px;
             padding: 10px 20px;
@@ -69,6 +93,12 @@
     <main>
         <canvas id="gameCanvas" width="320" height="320"></canvas>
         <button id="startGame">Oyunu Başlat</button>
+        <div id="controls">
+            <button class="control-btn" id="up">↑</button>
+            <button class="control-btn" id="left">←</button>
+            <button class="control-btn" id="right">→</button>
+            <button class="control-btn" id="down">↓</button>
+        </div>
     </main>
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -76,22 +106,17 @@
         const startGameButton = document.getElementById("startGame");
         const timeCounter = document.getElementById("time-counter");
 
+        const upButton = document.getElementById("up");
+        const downButton = document.getElementById("down");
+        const leftButton = document.getElementById("left");
+        const rightButton = document.getElementById("right");
+
         let snake = [{ x: 160, y: 160 }];
         let direction = { x: 0, y: 0 };
         let food = { x: 0, y: 0 };
         let interval;
         let elapsedTime = 0;
         let gameTime;
-
-        // Süreyi localStorage'da sakla
-        if (!localStorage.getItem("elapsedTime")) {
-            localStorage.setItem("elapsedTime", "0");
-        }
-
-        function updateCounter() {
-            elapsedTime = parseInt(localStorage.getItem("elapsedTime"), 10);
-            timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
-        }
 
         function spawnFood() {
             food.x = Math.floor(Math.random() * 20) * 16;
@@ -140,37 +165,36 @@
         function startGame() {
             snake = [{ x: 160, y: 160 }];
             direction = { x: 0, y: 0 };
+            elapsedTime = 0;
+
             spawnFood();
             clearInterval(interval);
             interval = setInterval(updateGame, 100);
+            if (gameTime) clearInterval(gameTime);
+            gameTime = setInterval(() => {
+                elapsedTime++;
+                timeCounter.textContent = `Geçen Süre: ${elapsedTime} sn`;
+            }, 1000);
         }
 
-        window.addEventListener("keydown", e => {
-            const key = e.key;
-            if (key === "ArrowUp" && direction.y === 0) direction = { x: 0, y: -16 };
-            if (key === "ArrowDown" && direction.y === 0) direction = { x: 0, y: 16 };
-            if (key === "ArrowLeft" && direction.x === 0) direction = { x: -16, y: 0 };
-            if (key === "ArrowRight" && direction.x === 0) direction = { x: 16, y: 0 };
+        // Mobil butonlar için yönlendirme
+        upButton.addEventListener("click", () => {
+            if (direction.y === 0) direction = { x: 0, y: -16 };
         });
 
-        startGameButton.addEventListener("click", () => {
-            startGame();
+        downButton.addEventListener("click", () => {
+            if (direction.y === 0) direction = { x: 0, y: 16 };
         });
 
-        // Sayaç her saniye güncellenir
-        gameTime = setInterval(() => {
-            elapsedTime++;
-            localStorage.setItem("elapsedTime", elapsedTime.toString());
-            updateCounter();
-        }, 1000);
-
-        // Sayfa yüklendiğinde sayaç güncellenir
-        window.onload = updateCounter;
-
-        // Sekme veya sayfa kapanınca sayaç sıfırlanır
-        window.addEventListener("unload", () => {
-            localStorage.setItem("elapsedTime", "0");
+        leftButton.addEventListener("click", () => {
+            if (direction.x === 0) direction = { x: -16, y: 0 };
         });
+
+        rightButton.addEventListener("click", () => {
+            if (direction.x === 0) direction = { x: 16, y: 0 };
+        });
+
+        startGameButton.addEventListener("click", startGame);
     </script>
 </body>
 </html>
