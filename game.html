@@ -3,46 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gelişmiş Yılan Oyunu</title>
+    <title>Akıllı Botlarla Gelişmiş Yılan Oyunu</title>
     <style>
         body {
             display: flex;
-            justify-content: center;
-            align-items: center;
             flex-direction: column;
-            height: 100vh;
-            margin: 0;
-            background: #282c34;
+            align-items: center;
+            justify-content: center;
+            background-color: #282c34;
             color: white;
+            margin: 0;
+            height: 100vh;
             font-family: Arial, sans-serif;
         }
 
         canvas {
-            background: #000;
+            background: black;
             border: 2px solid #4CAF50;
         }
 
         .score {
-            font-size: 18px;
             margin: 10px 0;
+            font-size: 18px;
         }
 
         .controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: grid;
+            grid-template-areas:
+                ". up ."
+                "left . right"
+                ". down .";
             gap: 10px;
-            margin-top: 10px;
         }
 
         .control-btn {
             width: 60px;
             height: 60px;
             background: #4CAF50;
-            border: none;
             color: white;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
             display: flex;
@@ -54,20 +55,16 @@
         .control-btn:hover {
             background: #45a049;
         }
-
-        .control-btn:active {
-            background: #3e8e41;
-        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
     <div class="score">Skor: <span id="score">0</span></div>
     <div class="controls">
-        <button class="control-btn" id="left">←</button>
-        <button class="control-btn" id="up">↑</button>
-        <button class="control-btn" id="down">↓</button>
-        <button class="control-btn" id="right">→</button>
+        <button class="control-btn" id="up" style="grid-area: up;">↑</button>
+        <button class="control-btn" id="left" style="grid-area: left;">←</button>
+        <button class="control-btn" id="right" style="grid-area: right;">→</button>
+        <button class="control-btn" id="down" style="grid-area: down;">↓</button>
     </div>
 
     <script>
@@ -79,11 +76,9 @@
         let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
         let bot1 = [{ x: 3 * boxSize, y: 3 * boxSize }];
         let bot2 = [{ x: 7 * boxSize, y: 7 * boxSize }];
-
         let direction = 'RIGHT';
-        let bot1Direction = 'DOWN';
-        let bot2Direction = 'UP';
-
+        let bot1Direction = 'RIGHT';
+        let bot2Direction = 'LEFT';
         let food = spawnFood();
         let score = 0;
 
@@ -101,9 +96,10 @@
             }
 
             updateSnake();
+            bot1Direction = getBotDirection(bot1, food);
+            bot2Direction = getBotDirection(bot2, food);
             updateBot(bot1, bot1Direction);
             updateBot(bot2, bot2Direction);
-
             draw();
         }
 
@@ -144,6 +140,14 @@
 
             bot.pop();
             bot.unshift(head);
+        }
+
+        function getBotDirection(bot, target) {
+            const head = bot[0];
+            if (head.x < target.x) return 'RIGHT';
+            if (head.x > target.x) return 'LEFT';
+            if (head.y < target.y) return 'DOWN';
+            if (head.y > target.y) return 'UP';
         }
 
         function isGameOver(snake) {
@@ -207,7 +211,7 @@
             ctx.fillRect(food.x, food.y, boxSize, boxSize);
         }
 
-        setInterval(gameLoop, 150);
+        setInterval(gameLoop, 200);
     </script>
 </body>
 </html>
