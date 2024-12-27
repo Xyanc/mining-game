@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akıllı Botlarla Yılan Oyunu</title>
+    <title>Çarpışma Kontrolü ile Yılan Oyunu</title>
     <style>
         body {
             display: flex;
@@ -77,8 +77,8 @@
 
         let snake = [{ x: 5 * boxSize, y: 5 * boxSize }];
         let bots = [
-            { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN' },
-            { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP' }
+            { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: '#FF5722', name: 'Ateşli Bot' },
+            { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: '#03A9F4', name: 'Keşifçi Bot' }
         ];
         let direction = 'RIGHT';
         let food = spawnFood();
@@ -91,14 +91,20 @@
         document.getElementById('right').addEventListener('click', () => changeDirection('RIGHT'));
 
         function gameLoop() {
-            if (isGameOver(snake)) {
+            if (isGameOver(snake, true)) {
                 alert('Oyun bitti! Skor: ' + score);
                 resetGame();
                 return;
             }
 
             updateSnake();
-            bots.forEach(bot => updateBot(bot));
+            bots.forEach((bot, index) => {
+                if (isGameOver(bot.body, false)) {
+                    bots.splice(index, 1); // Botu kaldır
+                } else {
+                    updateBot(bot);
+                }
+            });
             draw();
         }
 
@@ -108,6 +114,10 @@
             food = spawnFood();
             score = 0;
             document.getElementById('score').textContent = score;
+            bots = [
+                { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: '#FF5722', name: 'Ateşli Bot' },
+                { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: '#03A9F4', name: 'Keşifçi Bot' }
+            ];
         }
 
         function updateSnake() {
@@ -155,38 +165,30 @@
             }
         }
 
-        function isGameOver(snake) {
-            const head = snake[0];
+        function isGameOver(snakeBody, isPlayer) {
+            const head = snakeBody[0];
 
+            // Harita dışına çıkma
             if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
                 return true;
             }
 
-            for (let i = 1; i < snake.length; i++) {
-                if (head.x === snake[i].x && head.y === snake[i].y) {
+            // Kendine çarpma
+            for (let i = 1; i < snakeBody.length; i++) {
+                if (head.x === snakeBody[i].x && head.y === snakeBody[i].y) {
+                    return true;
+                }
+            }
+
+            // Diğer yılanlara çarpma
+            const allBodies = isPlayer ? bots.flatMap(bot => bot.body) : snake;
+            for (let segment of allBodies) {
+                if (head.x === segment.x && head.y === segment.y) {
                     return true;
                 }
             }
 
             return false;
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'ArrowUp') changeDirection('UP');
-            if (event.key === 'ArrowDown') changeDirection('DOWN');
-            if (event.key === 'ArrowLeft') changeDirection('LEFT');
-            if (event.key === 'ArrowRight') changeDirection('RIGHT');
-        }
-
-        function changeDirection(newDirection) {
-            if (
-                (newDirection === 'UP' && direction !== 'DOWN') ||
-                (newDirection === 'DOWN' && direction !== 'UP') ||
-                (newDirection === 'LEFT' && direction !== 'RIGHT') ||
-                (newDirection === 'RIGHT' && direction !== 'LEFT')
-            ) {
-                direction = newDirection;
-            }
         }
 
         function spawnFood() {
@@ -207,9 +209,12 @@
 
             bots.forEach(bot => {
                 bot.body.forEach(segment => {
-                    ctx.fillStyle = '#FF5722';
+                    ctx.fillStyle = bot.color;
                     ctx.fillRect(segment.x, segment.y, boxSize, boxSize);
                 });
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.fillText(bot.name, bot.body[0].x, bot.body[0].y - 5);
             });
 
             ctx.fillStyle = 'red';
