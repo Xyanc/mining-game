@@ -18,6 +18,7 @@
         }
 
         canvas {
+            display: none;
             background-color: black;
             border: 2px solid #4CAF50;
         }
@@ -29,6 +30,10 @@
             max-width: 400px;
             margin: 10px 0;
             font-size: 18px;
+        }
+
+        .controls, #startGame {
+            margin: 20px 0;
         }
 
         .controls {
@@ -59,9 +64,25 @@
         .control-btn:hover {
             background: #45a049;
         }
+
+        #startGame {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+
+        #startGame:hover {
+            background: #45a049;
+        }
     </style>
 </head>
 <body>
+    <button id="startGame">Başlat</button>
     <canvas id="gameCanvas"></canvas>
     <div class="info">
         <div>Skor: <span id="score">0</span></div>
@@ -77,6 +98,7 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startGame');
         const boxSize = 20;
         const canvasSize = Math.min(window.innerWidth, window.innerHeight) - 100;
         canvas.width = Math.floor(canvasSize / boxSize) * boxSize;
@@ -91,6 +113,7 @@
         let food = spawnFood();
         let score = 0;
         let timeElapsed = 0;
+        let gameInterval;
 
         document.addEventListener('keydown', handleKeyPress);
         document.getElementById('up').addEventListener('click', () => changeDirection('UP'));
@@ -98,23 +121,27 @@
         document.getElementById('left').addEventListener('click', () => changeDirection('LEFT'));
         document.getElementById('right').addEventListener('click', () => changeDirection('RIGHT'));
 
+        startButton.addEventListener('click', startGame);
+
+        function startGame() {
+            startButton.style.display = 'none';
+            canvas.style.display = 'block';
+            resetGame();
+            gameInterval = setInterval(gameLoop, 200);
+        }
+
         function gameLoop() {
             updateTimer();
 
             if (isGameOver(snake, true)) {
                 alert('Oyun bitti! Skor: ' + score);
-                resetGame();
+                clearInterval(gameInterval);
+                startButton.style.display = 'block';
                 return;
             }
 
             updateSnake();
-            bots.forEach((bot, index) => {
-                if (isGameOver(bot.body, false)) {
-                    bots.splice(index, 1); // Botu kaldır
-                } else {
-                    updateBot(bot);
-                }
-            });
+            bots.forEach(bot => updateBot(bot));
             draw();
         }
 
@@ -125,6 +152,7 @@
             score = 0;
             timeElapsed = 0;
             document.getElementById('score').textContent = score;
+            document.getElementById('timer').textContent = timeElapsed;
             bots = [
                 { body: [{ x: 3 * boxSize, y: 3 * boxSize }], direction: 'DOWN', color: '#FFC107' },
                 { body: [{ x: 7 * boxSize, y: 7 * boxSize }], direction: 'UP', color: '#FF5722' }
@@ -228,8 +256,6 @@
             ctx.fillStyle = 'red';
             ctx.fillRect(food.x, food.y, boxSize, boxSize);
         }
-
-        setInterval(gameLoop, 200);
     </script>
 </body>
 </html>
