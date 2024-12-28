@@ -27,24 +27,31 @@
   <p id="score">Puan: 0</p>
 
   <script>
-    let score = 0; // Puan değişkeni
     const scoreDisplay = document.getElementById('score');
+    const clickButton = document.getElementById('clickButton');
+
+    // Sayfa yüklendiğinde puanı sıfırla
+    window.addEventListener('load', () => {
+      sessionStorage.setItem('score', 0);
+      updateScoreDisplay(0);
+    });
 
     // Puanı artır
     function incrementScore() {
+      let score = parseInt(sessionStorage.getItem('score') || 0, 10);
       score++;
+      sessionStorage.setItem('score', score);
+      updateScoreDisplay(score);
+    }
+
+    // Puanı ekranda güncelle
+    function updateScoreDisplay(score) {
       scoreDisplay.textContent = `Puan: ${score}`;
     }
 
-    // Sekmeden ayrılınca puanı sıfırla
+    // Sayfadan ayrılma işlemleri
     window.addEventListener('beforeunload', () => {
-      score = 0; // Değişkeni sıfırla
-    });
-
-    // Sayfa yeniden yüklendiğinde puanı sıfırla
-    window.addEventListener('load', () => {
-      score = 0;
-      scoreDisplay.textContent = `Puan: ${score}`;
+      sessionStorage.setItem('score', 0); // Oturum sonlandığında sıfırla
     });
   </script>
 </body>
