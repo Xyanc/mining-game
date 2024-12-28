@@ -30,28 +30,29 @@
     const scoreDisplay = document.getElementById('score');
     const clickButton = document.getElementById('clickButton');
 
+    // Puan değişkeni
+    let score = 0;
+
     // Sayfa yüklendiğinde puanı sıfırla
     window.addEventListener('load', () => {
-      sessionStorage.setItem('score', 0);
-      updateScoreDisplay(0);
+      resetScore();
     });
 
-    // Puanı artır
+    // Puan artırma işlevi
     function incrementScore() {
-      let score = parseInt(sessionStorage.getItem('score') || 0, 10);
       score++;
-      sessionStorage.setItem('score', score);
-      updateScoreDisplay(score);
-    }
-
-    // Puanı ekranda güncelle
-    function updateScoreDisplay(score) {
       scoreDisplay.textContent = `Puan: ${score}`;
     }
 
-    // Sayfadan ayrılma işlemleri
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('score', 0); // Oturum sonlandığında sıfırla
+    // Puanı sıfırlama işlevi
+    function resetScore() {
+      score = 0;
+      scoreDisplay.textContent = `Puan: ${score}`;
+    }
+
+    // Kullanıcı sekmeden çıkınca veya sayfayı yenileyince puanı sıfırla
+    window.addEventListener('beforeunload', (event) => {
+      resetScore();
     });
   </script>
 </body>
