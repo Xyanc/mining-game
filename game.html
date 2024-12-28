@@ -67,6 +67,11 @@
             background-color: #003f8f;
         }
 
+        #start-button, #restart-button {
+            display: block;
+            margin: 20px auto;
+        }
+
         #restart-button {
             display: none;
         }
@@ -177,6 +182,7 @@
             gameInterval = setInterval(updateGame, 150);
             startButton.style.display = "none";
             restartButton.style.display = "none";
+            direction = { x: 1, y: 0 }; // Başlangıçta yılan sağa hareket etmeye başlasın
         });
 
         // Yeniden başlat
@@ -191,7 +197,7 @@
         document.getElementById("left").addEventListener("click", () => changeDirection(-1, 0));
         document.getElementById("right").addEventListener("click", () => changeDirection(1, 0));
 
-        // Sekmeden ayrıldığında sayaç sıfırlama
+        // Sekmeden ayrıldığında sayacı sıfırla
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
                 clearInterval(timerInterval);
