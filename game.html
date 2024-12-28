@@ -1,298 +1,202 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yılan Oyunu</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f4f4f4;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        #gameArea {
-            position: relative;
             text-align: center;
+            background-color: #f3f3f3;
+            margin: 0;
+            padding: 0;
         }
 
-        #gameCanvas {
-            border: 2px solid #333;
-            display: block;
-            margin: 0 auto;
-            background-color: #fff;
+        #game-container {
+            margin: 20px auto;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
         }
 
-        #scoreContainer {
+        #timer {
             position: absolute;
             top: 10px;
             right: 10px;
-            font-size: 18px;
-            color: #333;
-            background-color: rgba(255, 255, 255, 0.7);
-            padding: 5px;
-            border-radius: 5px;
-            z-index: 1; /* Sayaç önde olsun */
+            font-size: 16px;
+            color: #555;
+        }
+
+        #game-board {
+            border: 2px solid #555;
+            background-color: #eee;
+            margin: 10px auto;
+            display: block;
         }
 
         #controls {
-            margin-top: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        .direction-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            margin: 10px 0;
         }
 
         .horizontal-buttons {
             display: flex;
+            justify-content: center;
             gap: 10px;
         }
 
-        #controls button {
-            padding: 12px 20px;
-            font-size: 20px;
-            cursor: pointer;
-            background-color: #4CAF50;
-            color: white;
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 18px;
             border: none;
             border-radius: 5px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s, transform 0.2s;
-        }
-
-        #controls button:hover {
-            background-color: #45a049;
-            transform: scale(1.1);
-        }
-
-        #controls button:active {
-            transform: scale(0.95);
-        }
-
-        #gameControls {
-            display: flex;
-            flex-direction: column;
-            margin-top: 20px;
-        }
-
-        #startBtn, #restartBtn {
-            padding: 15px 30px;
-            font-size: 20px;
-            cursor: pointer;
-            background-color: #008CBA;
+            background-color: #007bff;
             color: white;
-            border: none;
-            border-radius: 5px;
-            margin-top: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s, transform 0.2s;
+            cursor: pointer;
         }
 
-        #startBtn:hover, #restartBtn:hover {
-            background-color: #007B8A;
-            transform: scale(1.05);
+        button:hover {
+            background-color: #0056b3;
         }
 
-        #startBtn:active, #restartBtn:active {
-            transform: scale(0.95);
+        button:active {
+            background-color: #003f8f;
         }
 
-        @media (max-width: 600px) {
-            #controls button {
-                font-size: 16px;
-                padding: 12px;
-            }
-
-            #gameCanvas {
-                width: 90vw;
-                height: 90vw;
-            }
-
-            #startBtn, #restartBtn {
-                padding: 12px 25px;
-                font-size: 18px;
-            }
+        #restart-button {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div id="gameArea">
-        <canvas id="gameCanvas" width="400" height="400"></canvas>
-        <div id="scoreContainer">
-            <span>Skor: <span id="score">0</span></span>
-        </div>
-
-        <!-- Butonlar -->
+    <div id="game-container">
+        <div id="timer">Geçen Süre: 0 saniye</div>
+        <canvas id="game-board"></canvas>
         <div id="controls">
-            <div class="direction-buttons">
-                <button id="upBtn">↑</button>
-                <div class="horizontal-buttons">
-                    <button id="leftBtn">←</button>
-                    <button id="rightBtn">→</button>
-                </div>
-                <button id="downBtn">↓</button>
+            <button id="up">⬆</button>
+            <div class="horizontal-buttons">
+                <button id="left">⬅</button>
+                <button id="down">⬇</button>
+                <button id="right">➡</button>
             </div>
         </div>
-
-        <div id="gameControls">
-            <button id="startBtn" onclick="startGame()">Başla</button>
-            <button id="restartBtn" onclick="restartGame()" style="display:none;">Tekrar Oyna</button>
-        </div>
+        <button id="start-button">Başla</button>
+        <button id="restart-button">Yeniden Oyna</button>
     </div>
-
     <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const startBtn = document.getElementById('startBtn');
-        const restartBtn = document.getElementById('restartBtn');
-        const upBtn = document.getElementById('upBtn');
-        const downBtn = document.getElementById('downBtn');
-        const leftBtn = document.getElementById('leftBtn');
-        const rightBtn = document.getElementById('rightBtn');
+        const canvas = document.getElementById("game-board");
+        const ctx = canvas.getContext("2d");
+        const startButton = document.getElementById("start-button");
+        const restartButton = document.getElementById("restart-button");
+        const timerElement = document.getElementById("timer");
 
-        let snake;
-        let food;
-        let direction;
-        let score;
+        canvas.width = 400;
+        canvas.height = 400;
+
+        let snake = [{ x: 200, y: 200 }];
+        let direction = { x: 0, y: 0 };
+        let food = { x: 0, y: 0 };
         let gameInterval;
+        let timerInterval;
+        let elapsedSeconds = 0;
 
-        const gridSize = 20;
-        const canvasSize = 400;
-
-        function startGame() {
-            startBtn.style.display = 'none';
-            restartBtn.style.display = 'none';
-            resetGame();
-            gameInterval = setInterval(updateGame, 100);
+        // Hareket yönünü güncelle
+        function changeDirection(x, y) {
+            if (direction.x === -x && direction.y === -y) return;
+            direction = { x, y };
         }
 
-        function resetGame() {
-            snake = [{x: 8 * gridSize, y: 8 * gridSize}];
-            food = generateFood();
-            direction = 'RIGHT';
-            score = 0;
-            scoreElement.textContent = score;
+        // Yemek oluştur
+        function spawnFood() {
+            food.x = Math.floor((Math.random() * canvas.width) / 20) * 20;
+            food.y = Math.floor((Math.random() * canvas.height) / 20) * 20;
         }
 
+        // Oyunu çiz
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Yemeği çiz
+            ctx.fillStyle = "red";
+            ctx.fillRect(food.x, food.y, 20, 20);
+
+            // Yılanı çiz
+            ctx.fillStyle = "green";
+            snake.forEach(segment => ctx.fillRect(segment.x, segment.y, 20, 20));
+        }
+
+        // Oyunu güncelle
         function updateGame() {
-            const head = { ...snake[0] };
-            
-            switch (direction) {
-                case 'UP':
-                    head.y -= gridSize;
-                    break;
-                case 'DOWN':
-                    head.y += gridSize;
-                    break;
-                case 'LEFT':
-                    head.x -= gridSize;
-                    break;
-                case 'RIGHT':
-                    head.x += gridSize;
-                    break;
-            }
+            const head = { x: snake[0].x + direction.x * 20, y: snake[0].y + direction.y * 20 };
 
-            if (head.x < 0 || head.x >= canvasSize || head.y < 0 || head.y >= canvasSize || snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameOver();
+            // Oyunu bitir
+            if (
+                head.x < 0 ||
+                head.y < 0 ||
+                head.x >= canvas.width ||
+                head.y >= canvas.height ||
+                snake.some(segment => segment.x === head.x && segment.y === head.y)
+            ) {
+                clearInterval(gameInterval);
+                clearInterval(timerInterval);
+                restartButton.style.display = "block";
                 return;
             }
 
-            snake.unshift(head);
-
+            // Yemeği yediğinde
             if (head.x === food.x && head.y === food.y) {
-                score++;
-                scoreElement.textContent = score;
-                food = generateFood();
+                spawnFood();
             } else {
                 snake.pop();
             }
 
+            snake.unshift(head);
             drawGame();
         }
 
-        function drawGame() {
-            ctx.clearRect(0, 0, canvasSize, canvasSize);
-
-            // Draw snake
-            snake.forEach((segment, index) => {
-                ctx.fillStyle = index === 0 ? 'green' : 'black';
-                ctx.fillRect(segment.x, segment.y, gridSize, gridSize);
-            });
-
-            // Draw food
-            ctx.fillStyle = 'red';
-            ctx.fillRect(food.x, food.y, gridSize, gridSize);
+        // Sayaç başlat
+        function startTimer() {
+            elapsedSeconds = 0;
+            timerInterval = setInterval(() => {
+                elapsedSeconds++;
+                timerElement.textContent = `Geçen Süre: ${elapsedSeconds} saniye`;
+            }, 1000);
         }
 
-        function generateFood() {
-            const x = Math.floor(Math.random() * (canvasSize / gridSize)) * gridSize;
-            const y = Math.floor(Math.random() * (canvasSize / gridSize)) * gridSize;
-            return { x, y };
-        }
+        // Oyun başlat
+        startButton.addEventListener("click", () => {
+            snake = [{ x: 200, y: 200 }];
+            direction = { x: 0, y: 0 };
+            spawnFood();
+            drawGame();
+            startTimer();
+            gameInterval = setInterval(updateGame, 150);
+            startButton.style.display = "none";
+            restartButton.style.display = "none";
+        });
 
-        function gameOver() {
-            clearInterval(gameInterval);
-            restartBtn.style.display = 'block';
-        }
+        // Yeniden başlat
+        restartButton.addEventListener("click", () => {
+            restartButton.style.display = "none";
+            startButton.click();
+        });
 
-        function restartGame() {
-            resetGame();
-            gameInterval = setInterval(updateGame, 100);
-        }
+        // Yön tuşları
+        document.getElementById("up").addEventListener("click", () => changeDirection(0, -1));
+        document.getElementById("down").addEventListener("click", () => changeDirection(0, 1));
+        document.getElementById("left").addEventListener("click", () => changeDirection(-1, 0));
+        document.getElementById("right").addEventListener("click", () => changeDirection(1, 0));
 
-        function changeDirection(newDirection) {
-            if (newDirection === 'UP' && direction !== 'DOWN') {
-                direction = 'UP';
-            } else if (newDirection === 'DOWN' && direction !== 'UP') {
-                direction = 'DOWN';
-            } else if (newDirection === 'LEFT' && direction !== 'RIGHT') {
-                direction = 'LEFT';
-            } else if (newDirection === 'RIGHT' && direction !== 'LEFT') {
-                direction = 'RIGHT';
-            }
-        }
-
-        upBtn.addEventListener('click', () => changeDirection('UP'));
-        downBtn.addEventListener('click', () => changeDirection('DOWN'));
-        leftBtn.addEventListener('click', () => changeDirection('LEFT'));
-        rightBtn.addEventListener('click', () => changeDirection('RIGHT'));
-
-        // Sekmeden çıkıldığında sayaç sıfırlanacak
-        document.addEventListener('visibilitychange', function() {
+        // Sekmeden ayrıldığında sayaç sıfırlama
+        document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
-                score = 0;
-                scoreElement.textContent = score;
+                clearInterval(timerInterval);
+                timerElement.textContent = "Geçen Süre: 0 saniye";
             }
-        });
-
-        // Sekmeye geri dönüldüğünde oyun devam eder
-        window.addEventListener('focus', function() {
-            if (gameInterval === null) {
-                gameInterval = setInterval(updateGame, 100);
-            }
-        });
-
-        // Pause the game and reset score when the tab is lost or the user navigates away
-        window.addEventListener('blur', () => {
-            clearInterval(gameInterval);
-            gameOver();
         });
     </script>
 </body>
