@@ -27,33 +27,40 @@
   <p id="score">Puan: 0</p>
 
   <script>
+    let score = 0; // Puan değişkeni
     const scoreDisplay = document.getElementById('score');
     const clickButton = document.getElementById('clickButton');
 
-    // SessionStorage ile puanı sıfırdan başlat
-    sessionStorage.setItem('score', 0);
-
-    // Puanı ekranda güncelle
-    function updateScoreDisplay() {
-      const score = parseInt(sessionStorage.getItem('score')) || 0;
+    // Puanı artırma işlevi
+    function incrementScore() {
+      score++;
       scoreDisplay.textContent = `Puan: ${score}`;
     }
 
-    // Puanı artır
-    clickButton.addEventListener('click', () => {
-      let score = parseInt(sessionStorage.getItem('score')) || 0;
-      score++;
-      sessionStorage.setItem('score', score);
-      updateScoreDisplay();
+    // Sekmeden çıkıldığında veya sayfa kapatıldığında puanı sıfırla
+    function resetScore() {
+      score = 0;
+    }
+
+    // Puan artır düğmesi
+    clickButton.addEventListener('click', incrementScore);
+
+    // Sayfa yüklendiğinde puanı sıfırla
+    window.addEventListener('load', () => {
+      score = 0;
+      scoreDisplay.textContent = `Puan: ${score}`;
     });
 
-    // Sekmeden ayrıldığında puanı sıfırla
-    window.addEventListener('beforeunload', () => {
-      sessionStorage.setItem('score', 0);
+    // Sekmeden ayrıldığında veya kapatıldığında puanı sıfırla
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        resetScore();
+        scoreDisplay.textContent = `Puan: ${score}`;
+      }
     });
 
-    // Sayfa yüklendiğinde puanı güncelle
-    window.addEventListener('load', updateScoreDisplay);
+    // Sayfa kapatıldığında puanı sıfırla
+    window.addEventListener('beforeunload', resetScore);
   </script>
 </body>
 </html>
