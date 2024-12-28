@@ -31,10 +31,11 @@
         #game-board {
             border: 2px solid #555;
             background-color: #fff;
-            margin: 10px auto;
+            margin: 20px auto;
             display: block;
             width: 100%;
             aspect-ratio: 1 / 1; /* Kare görünüm */
+            position: relative;
         }
 
         #controls {
@@ -42,12 +43,14 @@
             flex-direction: column;
             align-items: center;
             margin: 10px 0;
+            position: relative;
         }
 
         .horizontal-buttons {
             display: flex;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-between;
+            width: 60%;
+            margin-top: 10px;
         }
 
         button {
@@ -74,7 +77,12 @@
         #start-button, #restart-button {
             display: block;
             margin: 20px auto;
-            width: 80%;
+            width: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
         }
 
         #restart-button {
@@ -90,9 +98,9 @@
             <button id="up">⬆ Yukarı</button>
             <div class="horizontal-buttons">
                 <button id="left">⬅ Sol</button>
-                <button id="down">⬇ Aşağı</button>
                 <button id="right">➡ Sağ</button>
             </div>
+            <button id="down">⬇ Aşağı</button>
         </div>
         <button id="start-button">Başla</button>
         <button id="restart-button">Yeniden Oyna</button>
@@ -111,7 +119,6 @@
         let direction = { x: 0, y: 0 };
         let food = { x: 0, y: 0 };
         let gameInterval;
-        let timerInterval;
         let elapsedSeconds = 0;
 
         const gridSize = 20;
@@ -160,7 +167,6 @@
                 snake.some(segment => segment.x === head.x && segment.y === head.y)
             ) {
                 clearInterval(gameInterval);
-                direction = { x: 0, y: 0 }; // Hareketi durdur
                 restartButton.style.display = "block";
                 return;
             }
@@ -178,8 +184,10 @@
 
         // Sayaç başlat
         function startTimer() {
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
+            elapsedSeconds = 0;
+            timerElement.textContent = `Geçen Süre: ${elapsedSeconds} saniye`;
+
+            setInterval(() => {
                 elapsedSeconds++;
                 timerElement.textContent = `Geçen Süre: ${elapsedSeconds} saniye`;
             }, 1000);
@@ -209,6 +217,14 @@
         document.getElementById("down").addEventListener("click", () => changeDirection(0, 1));
         document.getElementById("left").addEventListener("click", () => changeDirection(-1, 0));
         document.getElementById("right").addEventListener("click", () => changeDirection(1, 0));
+
+        // Sekmeden ayrıldığında sayaç sıfırla
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                elapsedSeconds = 0;
+                timerElement.textContent = `Geçen Süre: 0 saniye`;
+            }
+        });
     </script>
 </body>
 </html>
