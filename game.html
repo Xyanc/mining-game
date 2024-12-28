@@ -131,6 +131,7 @@
         let gameInterval;
         let elapsedSeconds = 0;
         let score = 0;
+        let timerInterval;
 
         const gridSize = 20;
         const updateInterval = 200; // Slower game speed (in milliseconds)
@@ -202,7 +203,7 @@
         function startTimer() {
             timerElement.textContent = `Time Passed: ${elapsedSeconds} seconds`;
 
-            setInterval(() => {
+            timerInterval = setInterval(() => {
                 if (!document.hidden) {
                     elapsedSeconds++;
                     timerElement.textContent = `Time Passed: ${elapsedSeconds} seconds`;
@@ -214,6 +215,7 @@
 
         // Start the game
         startButton.addEventListener("click", () => {
+            // Reset game variables
             snake = [
                 { x: gridSize * 5, y: gridSize * 5 },
                 { x: gridSize * 4, y: gridSize * 5 },
@@ -233,6 +235,8 @@
         // Restart the game
         restartButton.addEventListener("click", () => {
             restartButton.style.display = "none";
+            elapsedSeconds = 0; // Reset timer on restart
+            startTimer();
             startButton.click();
         });
 
