@@ -23,29 +23,37 @@
 <body>
   <h1>Tıkla ve Kazan</h1>
   <p>İstediğiniz kadar tıklayın! Sekmeden veya sayfadan çıkarsanız puan sıfırlanır.</p>
-  <button id="clickButton" onclick="incrementScore()">Tıkla!</button>
+  <button id="clickButton">Tıkla!</button>
   <p id="score">Puan: 0</p>
 
   <script>
-    let score = 0; // Puan değişkeni
     const scoreDisplay = document.getElementById('score');
+    const clickButton = document.getElementById('clickButton');
 
-    // Puan artırma fonksiyonu
-    function incrementScore() {
-      score++;
+    // SessionStorage ile puanı sıfırdan başlat
+    sessionStorage.setItem('score', 0);
+
+    // Puanı ekranda güncelle
+    function updateScoreDisplay() {
+      const score = parseInt(sessionStorage.getItem('score')) || 0;
       scoreDisplay.textContent = `Puan: ${score}`;
     }
 
-    // Sayfa tamamen yüklendiğinde puanı sıfırla
-    window.addEventListener('load', () => {
-      score = 0; // Puanı sıfırla
-      scoreDisplay.textContent = `Puan: ${score}`;
+    // Puanı artır
+    clickButton.addEventListener('click', () => {
+      let score = parseInt(sessionStorage.getItem('score')) || 0;
+      score++;
+      sessionStorage.setItem('score', score);
+      updateScoreDisplay();
     });
 
     // Sekmeden ayrıldığında puanı sıfırla
-    window.addEventListener('beforeunload', (event) => {
-      score = 0; // Puanı sıfırla
+    window.addEventListener('beforeunload', () => {
+      sessionStorage.setItem('score', 0);
     });
+
+    // Sayfa yüklendiğinde puanı güncelle
+    window.addEventListener('load', updateScoreDisplay);
   </script>
 </body>
 </html>
