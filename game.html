@@ -22,10 +22,14 @@
 
         #timer {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            bottom: 10px;
+            left: 10px;
             font-size: 16px;
             color: #555;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         #game-board {
@@ -34,7 +38,7 @@
             margin: 20px auto;
             display: block;
             width: 100%;
-            aspect-ratio: 1 / 1; /* Kare görünüm */
+            aspect-ratio: 1 / 1;
             position: relative;
         }
 
@@ -115,7 +119,7 @@
         canvas.width = canvas.clientWidth;
         canvas.height = canvas.clientWidth;
 
-        let snake = [{ x: 100, y: 100 }];
+        let snake = [];
         let direction = { x: 0, y: 0 };
         let food = { x: 0, y: 0 };
         let gameInterval;
@@ -195,12 +199,15 @@
 
         // Oyun başlat
         startButton.addEventListener("click", () => {
-            snake = [{ x: 100, y: 100 }];
-            direction = { x: 0, y: 0 };
+            snake = [
+                { x: gridSize * 5, y: gridSize * 5 },
+                { x: gridSize * 4, y: gridSize * 5 },
+                { x: gridSize * 3, y: gridSize * 5 }
+            ];
+            direction = { x: 1, y: 0 };
             spawnFood();
             drawGame();
             startTimer();
-            elapsedSeconds = 0;
             gameInterval = setInterval(updateGame, 100);
             startButton.style.display = "none";
             restartButton.style.display = "none";
