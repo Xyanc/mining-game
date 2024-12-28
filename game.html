@@ -22,12 +22,12 @@
 </head>
 <body>
   <h1>Tıkla ve Kazan</h1>
-  <p>İstediğiniz kadar tıklayın! Sekmeden çıkarsanız puan sıfırlanır.</p>
+  <p>İstediğiniz kadar tıklayın! Sekmeden veya sayfadan çıkarsanız puan sıfırlanır.</p>
   <button id="clickButton" onclick="incrementScore()">Tıkla!</button>
   <p id="score">Puan: 0</p>
 
   <script>
-    let score = 0;
+    let score = 0; // Puan değişkeni
     const scoreDisplay = document.getElementById('score');
 
     // Puanı artır
@@ -36,7 +36,12 @@
       scoreDisplay.textContent = `Puan: ${score}`;
     }
 
-    // Sayfa yüklendiğinde puanı sıfırla
+    // Sekmeden ayrılınca puanı sıfırla
+    window.addEventListener('beforeunload', () => {
+      score = 0; // Değişkeni sıfırla
+    });
+
+    // Sayfa yeniden yüklendiğinde puanı sıfırla
     window.addEventListener('load', () => {
       score = 0;
       scoreDisplay.textContent = `Puan: ${score}`;
