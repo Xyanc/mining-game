@@ -235,8 +235,7 @@
         // Restart the game
         restartButton.addEventListener("click", () => {
             restartButton.style.display = "none";
-            elapsedSeconds = 0; // Reset timer on restart
-            startTimer();
+            // Do not reset the timer when restarting
             startButton.click();
         });
 
