@@ -133,6 +133,7 @@
         let score = 0;
 
         const gridSize = 20;
+        const updateInterval = 100; // Oyun hızı kontrolü (ms cinsinden)
 
         // Hareket yönünü güncelle
         function changeDirection(x, y) {
@@ -176,10 +177,7 @@
 
             // Duvara veya kendine çarpınca elen
             if (
-                head.x < 0 ||
-                head.y < 0 ||
-                head.x >= canvas.width ||
-                head.y >= canvas.height ||
+                head.x < 0 || head.y < 0 || head.x >= canvas.width || head.y >= canvas.height ||
                 snake.some(segment => segment.x === head.x && segment.y === head.y)
             ) {
                 clearInterval(gameInterval);
@@ -227,7 +225,7 @@
             spawnFood();
             drawGame();
             startTimer();
-            gameInterval = setInterval(updateGame, 200);
+            gameInterval = setInterval(updateGame, updateInterval); // Oyun hızı
             startButton.style.display = "none";
             restartButton.style.display = "none";
         });
@@ -243,6 +241,7 @@
         document.getElementById("down").addEventListener("click", () => changeDirection(0, 1));
         document.getElementById("left").addEventListener("click", () => changeDirection(-1, 0));
         document.getElementById("right").addEventListener("click", () => changeDirection(1, 0));
+
     </script>
 </body>
 </html>
